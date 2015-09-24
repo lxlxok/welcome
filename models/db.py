@@ -120,9 +120,9 @@ def get_configured_logger(name):
         if request.env.web2py_runtime_gae:
             # Create GAEHandler
             handler = GAEHandler()
-            handler.setLevel(logging.WARNING)
+            handler.setLevel(logging.INFO)
             logger.addHandler(handler)
-            logger.setLevel(logging.WARNING)
+            logger.setLevel(logging.INFO)
         else:
             # Create RotatingFileHandler
             import os
