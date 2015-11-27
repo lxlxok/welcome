@@ -8,18 +8,130 @@
 ## - download is for downloading files uploaded in the db (does streaming)
 #########################################################################
 
+from datetime import datetime
+
+
+def job_create():
+    """
+    create a new job information for the job table
+    """
+
+    form = SQLFORM(db.job)
+    now = datetime.utcnow()
+    form.vars.data_time=now.date()
+    if form.process().accepted:
+       redirect(URL('default','mainpage'))
+    return dict(form=form)
+
+
+def job_delete():
+    return dict()
+
+def job_edit():
+    return dict()
+
+
+
+
+"""
+require the user to login and identify their statues
+"""
 def index():
     """
-    example action using the internationalization operator T and flash
-    rendered by views/default/index.html or views/generic.html
-
-    if you need a simple wiki simply replace the two lines below with:
-    return auth.wiki()
+    show the view for login
     """
-    logger.info("Here we are, in the controller.")
-    response.flash = T("Hello World")
-    return dict(message=T('Welcome to web2py!'))
+    log_id = auth.user_id
+    if auth.user_id is not None:
+        r = db(db.auth_user.id == log_id).select().first()
+        person_identity = r.statue
 
+        """
+        check if user identity is teacher
+        """
+        if person_identity == 'teacher':
+            redirect(URL('default','mainpage_teacher',args=auth))
+        else:
+            redirect(URL('default','mainpage',args=auth))
+    logger.info("visiting index without loging")
+    return dict()
+
+
+
+"""
+define all the mainpage related with teacher
+"""
+def mainpage_teacher():
+    return dict()
+
+def load_mainpage_t():
+    log_id = auth.user_id
+    r = db(db.auth_user.id == log_id).select().first()
+    last_name = r.last_name
+    if last_name is None:
+        last_name = 'teacher'
+    return response.json(dict(last_name=last_name))
+
+
+"""
+define all the mainpage related with student
+"""
+@auth.requires_login()
+def mainpage():
+
+    """
+    show the mainpage
+    including the dashboard and job table
+    :return: information about job board
+    """
+    job_list=db(db.job.id > 0).select()
+
+    return dict(job_list=job_list)
+
+
+def load_mainpage_s():
+    log_id = auth.user_id
+    r = db(db.auth_user.id == log_id).select().first()
+    graduate_date = r.graduate
+
+    """
+    calculate how many days left for graduate
+    """
+    remain_day = 0
+    if r.graduate is not None:
+        now = datetime.utcnow().date()
+        remain = graduate_date - now
+        remain_day = remain.days
+    """
+    calculate how many post unreaded
+    """
+    unread_mess_num = db((db.post_search.post_to_id == log_id) & (db.post_search.read_state == False)).count()
+
+    return response.json(dict(remain_day=remain.days,unread_mess_num=unread_mess_num))
+
+
+
+
+def message():
+    return "hello world"
+
+def search_user():
+    email_add = request._vars['para']
+    r = db(db.auth_user.email == email_add).select().first()
+    if r is not None:
+        first_name = r.first_name
+        last_name = r.last_name
+        statue = r.statue
+        email = r.email
+        course = r.course
+        office = r.address
+        introduction = r.introduction
+        return dict(exit=True,email_add=email_add,statue=statue,first_name=first_name,last_name=last_name,email=email,course=course,office=office,introduction=introduction)
+    return dict(exit=False,email_add=email_add)
+
+
+@auth.requires_login()
+def dashboard():
+    return dict(message=T('Dashboard'))
 
 def user():
     """

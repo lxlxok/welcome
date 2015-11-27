@@ -33,7 +33,7 @@
 
       <ul class="nav navbar-nav navbar-right">
        <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="glyphicon glyphicon-cog"></span>Setting</a>
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="glyphicon glyphicon-cog"></span>Setting<span class="caret"></span></a>
           <ul class="dropdown-menu">
             <li><a href="{{=URL('default', 'user', args=['change_password'])}}"><span class="glyphicon glyphicon-lock"></span>Password</a></li>
             <li role="separator" class="divider"></li>
@@ -51,20 +51,38 @@
 
 </div>
 
+<div class="container">
+  <div class="jumbotron">
 
+  {{if exit == True :}}
+    <div><h4>name: {{=first_name}}  {{=last_name}}</h4></div>
+    <div><h4>identity: {{=statue}}</h4></div>
+    <div><h4>email:{{=email}}</h4></div>
+    {{if course != '':}}
+    <div><h4>course:{{=course}}</h4></div>
+    {{pass}}
+    {{if office != '':}}
+    <div><h4>office:{{=office}}</h4></div>
+    {{pass}}
+    {{if introduction != '':}}
+    <div><h4>introduction:{{=introduction}}</h4></div>
+    {{pass}}
+
+
+    <a href="{{=URL('default','job_create')}}" class="btn btn-info "><span class="glyphicon glyphicon-search"></span> Followed</a>
+
+
+
+  {{else:}}
+    <div class="jumbotron-h1"><h1>{{=email_add}} doesn't exit, please search again</h1></div>
+
+  {{pass}}
+  </div>
+</div>
 
 
 
 <script id="template" type="text/ractive">
-
-<div class="container">
-  <div class="jumbotron">
-    <div class="jumbotron-h1"><h1>   {%remain_day%} days left for job seeking</h1></div>
-    <span class="jumbotron-h2"><h2>{%unread_mess_num%} unread message</h2></span>
-    <a href="{{=URL('default','job_create')}}" class="btn btn-info btn-lg"><span class="glyphicon glyphicon-search"></span> Create</a>
-  </div>
-</div>
-
 </script>
 
 
@@ -82,7 +100,7 @@ $(function() {
         delimiters: ['{%', '%}'],
         tripleDelimiters: ['{%%', '%%}'],
         data: {
-            remain_day: 0,
+            exit: {{=exit}},
             unread_mess_num: 0,
         },
     });
@@ -113,42 +131,3 @@ $(function() {
 
 
 
-
-
-
-<div class="container">
-    <h4>Job Information</h4>
-    <table class="table table-striped">
-        <thead>
-        <tr>
-            <th>Start</th>
-            <th>Company</th>
-            <th>Position</th>
-            <th>State</th>
-            <th>Contactor</th>
-            <th>Email</th>
-            <th>Update</th>
-        </tr>
-        </thead>
-        <tbody>
-        {{if job_list is not None:}}
-            {{for job in job_list:}}
-                <tr>
-                    {{if job.job_important==False:}}
-                    <td><i class="fa fa-star-o"></i></td>
-                    {{else:}}
-                    <td><i class="fa fa-star"></i></td>
-                    {{pass}}
-                    <td>{{=job.job_name}}</td>
-                    <td>{{=job.job_title}}</td>
-                    <td>{{=job.job_state}}</td>
-                    <td>{{=job.job_contact}}</td>
-                    <td>{{=job.job_email}}</td>
-                    <td>{{=job.data_time}}</td>
-                </tr>
-             {{pass}}
-        {{pass}}
-        </tbody>
-    </table>
-
-<div>

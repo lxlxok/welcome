@@ -1,0 +1,459 @@
+
+{{extend 'layout.html'}}
+<style>
+
+    div.post-table {
+        margin:15px 0;
+        background-color: #eee;
+        boarder:1px solid rgba(0,0,0,0.2);
+        border-radius:5px;
+        position:ralative;
+        word-wrap:break-word;overflow:hidden
+    }
+        .post-button {
+        float:right;
+        }
+
+        .post-title {
+            text-align: center;
+        }
+        p.post-body {
+            align:justify;
+            white-space: nowrap;
+            word-break: break-all;
+            word-wrap:break-word;overflow:hidden
+        }
+        .post-time{
+            color: #cd8f40;
+            text-align: center;
+
+        }
+
+</style>
+   <div id="target">
+
+    </div>
+
+    <script id="template" type="text/ractive">
+
+    <div class="page">
+    <!-- Main jumbotron for a primary marketing message or call to action -->
+        <div class="jumbotron">
+          <div class="container">
+            <h1>{{=board_name}}</h1>
+
+              {{if log_id is not None:}}
+            <p>
+               <button class="btn btn-primary btn-lg" on-click="create-post">Create Post</button>
+            </p>
+              {{else:}}
+            <p>
+              {{=A('Sign Up', _class='btn btn-warning btn-lg', _href=URL('default', 'user', args=['register']))}}
+              {{=A('Sign In', _class='btn btn-success btn-lg', _href=URL('default', 'user', args=['login']))}}
+            </p>
+              {{pass}}
+           {% #if loading %}
+              <div id="load_spinner">
+                <i class="fa fa-spinner fa-spin fa-4x"></i>
+              </div>
+            {% /if %}
+
+            {% #if deleting %}
+            <button class="btn btn-info btn-lg" on-click="deleteall"><span class="glyphicon glyphicon-trash"></span> </button>
+            {% /if %}
+          </div>
+        </div>
+
+<table class="table">
+
+{%#each post_list:num%}
+
+      <div class="col-md-4 ">
+         <div class="post-table">
+              <div style='background-color: {% color %};'>
+                   <p class="post-button">
+
+              {% #if log_id == created_by %}
+
+                <button class="fa fa-pencil" data-arrayid={%num%}  on-click="editpost"></button>
+                <button class="fa fa-times" data-arrayid={%num%} on-click="deletepost"></button>
+
+              {% /if %}
+
+                   </p>
+             {% #if edit_t %}
+                <div class="post-title"><textarea id="editarea_t" value="{% title %}" data-arrayid={%num%} on-blur="editdonet"></textarea></div>
+             {% else %}
+               <div class="post-title"><h4>{%title%}</h4></div>
+             {% /if %}
+             {% #if edit_b %}
+               <div class="post-body"><textarea id="editarea_b" value="{% body %}" data-arrayid={%num%} on-blur="editdoneb"></textarea></div>
+             {% else %}
+               <div class="post-body">{%body%}</div>
+             {% /if %}
+              <div class="post-time"><a href="#" data-toggle="tooltip" title="SAVE ERROR!">
+               {% #if save_error %}
+               <button class="fa fa-exclamation"></button>
+               {% /if %}
+               </a></div></tr>
+
+           </div>
+
+{%/each%}
+
+</table>
+
+    </div>
+</script>
+
+
+<script>
+
+    $(document).ready(function(){
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+
+
+
+
+    $(function() {
+     var d = {{=board_id}};
+  // Ractive object
+  var MAIN = new Ractive({
+    el: '#target',
+    template: '#template',
+    delimiters: ['{%', '%}'],
+    tripleDelimiters: ['{%%', '%%}'],
+    data: {
+      post_list: [],
+      draft_list: [],
+      log_id: '',
+      board_id: d,
+      deleting: false,
+      loading: false,
+      edit_now: false,
+      edit_now_id:'',
+      loding_error: false
+
+    },
+  });
+
+  $.ajax("{{=URL('default', 'load_post', user_signature=True)}}",
+          {
+             data: {
+                board_id: {{=board_id}}
+              },
+            method: 'POST',
+            success: function (data) {
+              MAIN.set('post_list', data['post_list']);
+              MAIN.set('log_id',data['log_id']);
+            }
+          }
+  );
+
+  MAIN.on("create-post", function(e) {
+    var create_id = MAIN.get('log_id');
+    var post_list = MAIN.get('post_list');
+    var draft_list = MAIN.get('draft_list');
+    var uuid =generateUUID();
+    var empty_post = {title:'title',body:'body',created_by:create_id,draft_id:uuid,edit_t:false,edit_b:false,color:'#eee',delete:false,save_error:false};
+    draft_list.splice(0,0,empty_post);
+    post_list.splice(0,0,empty_post);
+    MAIN.set('post_list',post_list);
+    MAIN.set('draft_list',draft_list);
+
+  });
+
+  function generateUUID(){
+    var d = new Date().getTime();
+    if(window.performance && typeof window.performance.now === "function"){
+        d += performance.now();; //use high-precision timer if available
+    }
+    var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = (d + Math.random()*16)%16 | 0;
+        d = Math.floor(d/16);
+        return (c=='x' ? r : (r&0x3|0x8)).toString(16);
+    });
+    return uuid;
+  }
+
+     MAIN.on("editpost", function(e) {
+    var areaid = $(e.node).data("arrayid");
+    var tmppost=MAIN.get('post_list');
+    tmppost[areaid]['edit_t']=true;
+    tmppost[areaid]['edit_b']=true;
+    MAIN.set("post_list", tmppost);
+    MAIN.set("edit_now",true);
+    MAIN.set("edit_now_id",tmppost[areaid]['draft_id']);
+    $("#editarea_t").focus();
+  });
+
+    MAIN.on("editdonet", function(e) {
+    var areaid = $(e.node).data("arrayid");
+    var tmppost=MAIN.get('post_list');
+    tmppost[areaid]['edit_t']=false;
+    MAIN.set("post_list", tmppost);
+     $("#editarea_b").focus();
+  })
+
+    MAIN.on("editdoneb", function(e) {
+    var areaid = $(e.node).data("arrayid");
+    var tmppost=MAIN.get('post_list');
+    tmppost[areaid]['edit_b']=false;
+    MAIN.set("post_list", tmppost);
+    var board_id = MAIN.get('board_id');
+    send_post(board_id,tmppost[areaid]['title'],tmppost[areaid]['body'],tmppost[areaid]['draft_id']);
+    MAIN.set("loading",true);
+    MAIN.set("edit_now",false);
+  })
+
+
+    MAIN.on("deletepost", function(e) {
+    var areaid = $(e.node).data("arrayid");
+    var tmppost=MAIN.get('post_list');
+    tmppost[areaid]['color']='#EEA938';
+    tmppost[areaid]['delete']=true;
+    MAIN.set("post_list", tmppost);
+    MAIN.set("deleting",true);
+
+  })
+
+
+     MAIN.on("deleteall", function(e) {
+    var tmppost=MAIN.get('post_list');
+    var i = 0;
+    while (i < tmppost.length) {
+        if (tmppost[i]['delete'] == true) {
+            delete_post(tmppost[i]['draft_id']);
+            tmppost.splice(i,1);
+
+        } else {
+            i++;
+        }
+    }
+
+    MAIN.set("post_list", tmppost);
+    MAIN.set("deleting",false);
+
+  })
+
+  function delete_post(send_draft_id) {
+    $.ajax("{{=URL('default', 'delete_post', user_signature=True)}}",
+            {
+
+              data: {
+                draft_id: send_draft_id
+              },
+              method: 'POST',
+              success: function() {
+              var draft_list = MAIN.get('draft_list');
+              var i = 0;
+              while (i < draft_list.length) {
+                if (draft_list[i]['draft_id'] == send_draft_id)
+                {
+                    draft_list.splice(i,1);
+                }
+                else {
+                    i++;
+                }
+              }
+              },
+              error: function() {}
+            }
+    );
+  }
+
+
+  function send_post(send_board_id, send_title, send_body, send_draft_id) {
+           var tmp_list = MAIN.get("post_list");
+           var index;
+           for (var i = 0; i < tmp_list.length; i++) {
+                if (tmp_list[i]['draft_id'] == send_draft_id) {
+                      index = i;
+                }
+           }
+
+
+    $.ajax("{{=URL('default', 'add_post', user_signature=True)}}",
+            {
+              data: {
+                board_id: send_board_id,
+                title: send_title,
+                body: send_body,
+                draft_id: send_draft_id
+              },
+              method: 'POST',
+              success: function() {
+              var draft_list = MAIN.get('draft_list');
+              var i = 0;
+              while (i < draft_list.length) {
+                if (draft_list[i]['draft_id'] == send_draft_id)
+                {
+                    draft_list.splice(i,1);
+                }
+                else {
+                    i++;
+                }
+              }
+              MAIN.set('loading',false);
+              tmp_list[index]['save_error']=false;
+              MAIN.set('post_list',tmp_list);
+              MAIN.set('loding_error',false);
+              },
+              error: function() {
+               tmp_list[index]['save_error']=true;
+                MAIN.set('post_list',tmp_list);
+                MAIN.set('loading',false);
+                 MAIN.set('loding_error',true);
+              }
+            }
+    );
+  }
+
+
+          // Called every 10s, or upon switching drafts.
+  function periodic_load() {
+
+      // Loads the initial list of boards.
+  $.ajax("{{=URL('default', 'load_post', user_signature=True)}}",
+          {
+             data: {
+                board_id: {{=board_id}}
+              },
+            method: 'POST',
+            success: function (data) {
+              var tmp_list = data['post_list'];
+              var draft_list = MAIN.get('draft_list');
+              for (var i = 0; i < draft_list.length; i++) {
+                  tmp_list.splice(0,0,draft_list[i]);
+              }
+
+              var edit_now = MAIN.get("edit_now");
+              var send_title;
+              var send_body;
+              var edit_tit;
+              var edit_bod;
+
+              var deleting = MAIN.get("deleting");
+
+              if (deleting == true) {
+                 var oldtmp_list = MAIN.get("post_list");
+                 for (var i = 0; i < oldtmp_list.length; i++) {
+                     if (oldtmp_list[i]['delete']== true) {
+                        for (var j = 0; j < tmp_list.length; j++) {
+                            if (tmp_list[j]['draft_id'] == oldtmp_list[i]['draft_id']) {
+                                tmp_list[j]['color'] = oldtmp_list[i]['color'];
+                                tmp_list[j]['delete'] = oldtmp_list[i]['delete'];
+                            }
+                        }
+                     }
+                 }
+              }
+
+              var loding_error= MAIN.get("loding_error");
+
+              if (loding_error == true) {
+                 var oldtmp_list = MAIN.get("post_list");
+                 for (var i = 0; i < oldtmp_list.length; i++) {
+                     if (oldtmp_list[i]['save_error']== true) {
+                        for (var j = 0; j < tmp_list.length; j++) {
+                            if (tmp_list[j]['draft_id'] == oldtmp_list[i]['draft_id']) {
+                                tmp_list[j]['save_error'] = oldtmp_list[i]['save_error'];
+                            }
+                        }
+                     }
+                 }
+              }
+
+              if (edit_now == true) {
+                  var send_draft_id = MAIN.get("edit_now_id");
+                  var oldtmp_list = MAIN.get("post_list");
+                  for (var i = 0; i < oldtmp_list.length; i++) {
+                     if (oldtmp_list[i]['draft_id'] == send_draft_id) {
+                       send_title = oldtmp_list[i]['title'];
+                       send_body = oldtmp_list[i]['body'];
+                       edit_tit =  oldtmp_list[i]['edit_t'];
+                       edit_bod =  oldtmp_list[i]['edit_b'];
+                     }
+                  }
+
+                  for (var i = 0; i < tmp_list.length; i++) {
+                      if (tmp_list[i]['draft_id'] == send_draft_id) {
+                          tmp_list[i]['title'] = send_title;
+                          tmp_list[i]['body'] = send_body;
+                          tmp_list[i]['edit_t'] = edit_tit;
+                          tmp_list[i]['edit_b'] = edit_bod;
+                      }
+                  }
+              }
+
+
+              MAIN.set('post_list', tmp_list);
+
+            }
+          }
+  );
+  }
+
+
+   // Called every 10s, or upon switching drafts.
+  function periodic_save() {
+  var edit_now = MAIN.get("edit_now");
+  if (edit_now == true) {
+      MAIN.set("loading",true);
+      var send_draft_id = MAIN.get("edit_now_id");
+      var send_board_id = MAIN.get("board_id");
+      var tmp_list = MAIN.get("post_list");
+      var send_title;
+      var send_body;
+      var index;
+      for (var i = 0; i < tmp_list.length; i++) {
+          if (tmp_list[i]['draft_id'] == send_draft_id) {
+              send_title = tmp_list[i]['title'];
+              send_body = tmp_list[i]['body'];
+              index = i;
+          }
+      }
+      // Loads the initial list of boards.
+      $.ajax("{{=URL('default', 'add_post', user_signature=True)}}",
+              {
+                data:{
+                    board_id: send_board_id,
+                    title: send_title,
+                    body: send_body,
+                    draft_id: send_draft_id
+                },
+                  method: 'POST',
+
+                  success: function () {
+                   var draft_list = MAIN.get('draft_list');
+                   var i = 0;
+                   while (i < draft_list.length) {
+                    if (draft_list[i]['draft_id'] == send_draft_id) {
+                       draft_list.splice(i,1);
+                   } else {
+                        i++;
+                    }
+                   }
+                   MAIN.set("loading",false);
+                   tmp_list[index]['save_error']=false;
+                    MAIN.set('post_list',tmp_list);
+                    MAIN.set('loding_error',false);
+                  },
+                 error: function() {
+
+                 tmp_list[index]['save_error']=true;
+                  MAIN.set('post_list',tmp_list);
+                  MAIN.set('loading',false);
+                   MAIN.set('loding_error',true);
+                 }
+              }
+      );
+  }
+  }
+
+   setInterval(periodic_save, 10000);
+   setInterval(periodic_load, 10000);
+
+})
+</script>

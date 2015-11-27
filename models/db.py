@@ -54,6 +54,16 @@ response.form_label_separator = myconf.take('forms.separator')
 from gluon.tools import Auth, Service, PluginManager
 
 auth = Auth(db)
+
+auth.settings.extra_fields['auth_user']= [
+  Field('statue',requires=IS_IN_SET(['student','teacher'])),
+  Field('course'),
+  Field('graduate','date'),
+  Field('address'),
+  Field('introduction','text')]
+
+
+
 service = Service()
 plugins = PluginManager()
 
