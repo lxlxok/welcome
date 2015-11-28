@@ -1,0 +1,187 @@
+{{extend 'layout.html'}}
+
+<style>
+
+</style>
+
+<nav class="navbar navbar-inverse navbar-fixed-top">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="#">GIT LUCK</a>
+    </div>
+    <div>
+      <ul class="nav navbar-nav">
+        <li class="active"><a href="{{=URL('default', 'mainpage_teacher')}}"><span class="glyphicon glyphicon-home"></span>Home Page</a></li>
+        <li class="active"><a href="{{=URL('default', 'message')}}"><span class="glyphicon glyphicon-envelope"></span>Message</a></li>
+      </ul>
+
+      <ul class="nav navbar-nav navbar-right">
+         <li><a href="{{=URL('default', 'user', args=['profile'])}}"><span class="glyphicon glyphicon-user"></span>Profile</a></li>
+         <li><a href="{{=URL('default', 'user', args=['change_password'])}}"><span class="glyphicon glyphicon-lock"></span>Password</a></li>
+          <li><a href="{{=URL('default', 'user', args=['logout'])}}"><span class="glyphicon glyphicon-off"></span>Log out</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<link rel="stylesheet" type="text/css" href="{{=URL('static','components/bootstrap/dist/css/bootstrap.min.css')}}"/>
+<link rel="stylesheet" type="text/css" href="{{=URL('static','components/bootstrap/dist/css/bootstrap-theme.min.css')}}"/>
+<link rel="stylesheet" type="text/css" href="{{=URL('static','components/components-font-awesome/css/font-awesome.min.css')}}"/>
+<link rel="stylesheet" type="text/css" href="{{=URL('static','components/dist/bootstrap3-wysihtml5.min.css')}}"/>
+
+<div class="container">
+  <div class="jumbotron" style="margin-top:40px">
+    <h1><small>post new message</small></h1>
+    <input style="width:50%" id="pos_title" placeholder="title" name="title"/>
+    <hr style="border-color: white"/>
+    <textarea id="pos_content" class="textarea" placeholder="Enter text ..." style="width: 100%; height: 200px; font-size: 14px; line-height: 18px;"></textarea>
+    <button id="submit-btn" class="btn btn-default" >Submit</button>
+  </div>
+</div>
+
+
+
+<script src="{{=URL('static', 'components/wysihtml5x/dist/wysihtml5x-toolbar.min.js')}}"></script>
+<script src="{{=URL('static', 'components/jquery/dist/jquery.min.js')}}"></script>
+<script src="{{=URL('static', 'components/bootstrap/dist/js/bootstrap.min.js')}}"></script>
+<script src="{{=URL('static', 'components/handlebars/handlebars.runtime.min.js')}}"></script>
+<script src="{{=URL('static', 'components/dist/bootstrap3-wysihtml5.min.js')}}"></script>
+
+
+<script>
+  $('.textarea').wysihtml5({
+    toolbar: {
+      fa: true
+    }
+  });
+
+   $(function() {
+     $("#submit-btn").click(function() {
+         var pos_title = $("#pos_title").val();
+         var pos_content = $('#pos_content').val();
+         var darft_id = generateUUID();
+         send_post(darft_id, pos_title,pos_content);
+
+
+     })
+
+       function send_post(darft_id, pos_title, pos_content) {
+    $.ajax("{{=URL('default', 'add_post', user_signature=True)}}",
+            {
+
+              data: {
+                uiud_id: darft_id,
+                title: pos_title,
+                content: pos_content
+              },
+              method: 'POST',
+              success: function() {
+              alert("Submit Success!");
+              },
+              error: function() {
+              alert("Submit Error!");
+              }
+            }
+    );
+  }
+
+
+
+
+
+  function generateUUID(){
+    var d = new Date().getTime();
+    if(window.performance && typeof window.performance.now === "function"){
+        d += performance.now();; //use high-precision timer if available
+    }
+    var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = (d + Math.random()*16)%16 | 0;
+        d = Math.floor(d/16);
+        return (c=='x' ? r : (r&0x3|0x8)).toString(16);
+    });
+    return uuid;
+  }
+
+
+   })
+</script>
+
+
+
+
+<div id="target">
+
+</div>
+
+
+<script id="template" type="text/ractive">
+
+
+<div class="container">
+
+{% #each post_list:num %}
+
+ <div class="panel panel-default" style="width:100%">
+  <div class="panel-heading">
+    <h3 class="panel-title"> {% title %}</h3>
+  </div>
+  <div class="panel-body">
+    {%% content %%}
+  </div>
+  <div class="panel-footer">{% time %}</div>
+</div>
+
+{% /each %}
+
+</div>
+
+</script>
+
+
+
+<script>
+
+$(function() {
+
+
+
+    // Ractive object
+    var MAIN = new Ractive({
+        el: '#target',
+        template: '#template',
+        delimiters: ['{%', '%}'],
+        tripleDelimiters: ['{%%', '%%}'],
+        data: {
+            post_list: [],
+
+
+        },
+    });
+
+  // Loads the initial information of mainpage for student.
+  $.ajax("{{=URL('default', 'load_post')}}",
+          {
+            method: 'POST',
+            success: function (data) {
+              MAIN.set('post_list', data['post_list']);
+            }
+          }
+  );
+
+
+
+
+
+})
+</script>
+
+
+
+
+
+
+
+
+
+
+

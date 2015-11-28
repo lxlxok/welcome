@@ -1,0 +1,32 @@
+{{extend 'layout.html'}}
+
+
+<style>
+    div.job-create-form{
+        width: 70%;
+        padding-left: 20%;
+    }
+</style>
+
+<nav class="navbar navbar-inverse navbar-fixed-top">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="#">GIT LUCK</a>
+    </div>
+    <div>
+      <ul class="nav navbar-nav">
+        <li class="active"><a href="{{=URL('default', 'mainpage')}}"><span class="glyphicon glyphicon-home"></span>Home Page</a></li>
+        <li class="active"><a href="{{=URL('default', 'message')}}"><span class="glyphicon glyphicon-envelope"></span>Message</a></li>
+      </ul>
+
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="{{=URL('default', 'user', args=['change_password'])}}"><span class="glyphicon glyphicon-lock"></span>Password</a></li>
+          <li><a href="{{=URL('default', 'user', args=['profile'])}}"><span class="glyphicon glyphicon-user"></span>Profile</a></li>
+         <li><a href="{{=URL('default', 'user', args=['logout'])}}"><span class="glyphicon glyphicon-off"></span>Log out</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+<div class="job-create-form">
+    {{=form}}
+</div>
