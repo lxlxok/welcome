@@ -12,7 +12,7 @@
     <div>
       <ul class="nav navbar-nav">
         <li class="active"><a href="{{=URL('default', 'mainpage_teacher')}}"><span class="glyphicon glyphicon-home"></span>Home Page</a></li>
-        <li class="active"><a href="{{=URL('default', 'message')}}"><span class="glyphicon glyphicon-envelope"></span>Message</a></li>
+        <li class="active"><a href="{{=URL('default', 'follower')}}"><span class="glyphicon glyphicon-heart"></span>Fans</a></li>
       </ul>
 
       <ul class="nav navbar-nav navbar-right">
@@ -24,8 +24,7 @@
   </div>
 </nav>
 
-<link rel="stylesheet" type="text/css" href="{{=URL('static','components/bootstrap/dist/css/bootstrap.min.css')}}"/>
-<link rel="stylesheet" type="text/css" href="{{=URL('static','components/bootstrap/dist/css/bootstrap-theme.min.css')}}"/>
+
 <link rel="stylesheet" type="text/css" href="{{=URL('static','components/components-font-awesome/css/font-awesome.min.css')}}"/>
 <link rel="stylesheet" type="text/css" href="{{=URL('static','components/dist/bootstrap3-wysihtml5.min.css')}}"/>
 
@@ -56,27 +55,67 @@
   });
 
    $(function() {
+
+    // Ractive object
+    var MAIN = new Ractive({
+        el: '#target',
+        template: '#template',
+        delimiters: ['{%', '%}'],
+        tripleDelimiters: ['{%%', '%%}'],
+        data: {
+            post_list: [],
+            t_name:''
+
+        },
+    });
+
+  // Loads the initial information of mainpage for student.
+  $.ajax("{{=URL('default', 'load_post')}}",
+          {
+            method: 'POST',
+            success: function (data) {
+              MAIN.set('post_list', data['post_list']);
+              MAIN.set('t_name',data['t_name']);
+            }
+          }
+  );
+
+     MAIN.on("delete-post", function(e) {
+    var areaid = $(e.node).data("arrayid");
+    var tmppost=MAIN.get('post_list');
+    var tmpuiud =tmppost[areaid]['uiud'];
+    delete_post(tmpuiud,areaid);
+  });
+
+
      $("#submit-btn").click(function() {
          var pos_title = $("#pos_title").val();
          var pos_content = $('#pos_content').val();
          var darft_id = generateUUID();
-         send_post(darft_id, pos_title,pos_content);
+         var teacher_name = MAIN.get("t_name");
+         send_post(darft_id, pos_title,pos_content,teacher_name);
 
 
      })
 
-       function send_post(darft_id, pos_title, pos_content) {
-    $.ajax("{{=URL('default', 'add_post', user_signature=True)}}",
+       function send_post(darft_id, pos_title, pos_content,teacher_name) {
+    $.ajax("{{=URL('default', 'add_post')}}",
             {
 
               data: {
                 uiud_id: darft_id,
                 title: pos_title,
-                content: pos_content
+                content: pos_content,
+                t_name: teacher_name
               },
               method: 'POST',
               success: function() {
-              alert("Submit Success!");
+              var tmp_list=MAIN.get("post_list");
+              var d = new Date();
+              var now = d.toString().substr(0,25);
+              var tmp_post={title:pos_title,content:pos_content,uiud:darft_id,time:now,delete:false};
+              tmp_list.splice(0,0,tmp_post);
+              MAIN.set('post_list',tmp_list);
               },
               error: function() {
               alert("Submit Error!");
@@ -86,7 +125,26 @@
   }
 
 
+      function delete_post(darft_id,num_id) {
+    $.ajax("{{=URL('default', 'delete_post', user_signature=True)}}",
+            {
 
+              data: {
+                uiud_id: darft_id
+              },
+              method: 'POST',
+              success: function() {
+
+              var tmp_list=MAIN.get("post_list");
+              tmp_list.splice(num_id,1);
+              MAIN.set('post_list',tmp_list);
+              },
+              error: function() {
+              alert("Submit Error!");
+              }
+            }
+    );
+  }
 
 
   function generateUUID(){
@@ -104,6 +162,8 @@
 
 
    })
+
+
 </script>
 
 
@@ -123,7 +183,7 @@
 
  <div class="panel panel-default" style="width:100%">
   <div class="panel-heading">
-    <h3 class="panel-title"> {% title %}</h3>
+    <span> {% title %} </span> <span style="float:right"><button data-arrayid={%num%} on-click="delete-post"><span class="glyphicon glyphicon-trash"></span></button></span>
   </div>
   <div class="panel-body">
     {%% content %%}
@@ -139,41 +199,6 @@
 
 
 
-<script>
-
-$(function() {
-
-
-
-    // Ractive object
-    var MAIN = new Ractive({
-        el: '#target',
-        template: '#template',
-        delimiters: ['{%', '%}'],
-        tripleDelimiters: ['{%%', '%%}'],
-        data: {
-            post_list: [],
-
-
-        },
-    });
-
-  // Loads the initial information of mainpage for student.
-  $.ajax("{{=URL('default', 'load_post')}}",
-          {
-            method: 'POST',
-            success: function (data) {
-              MAIN.set('post_list', data['post_list']);
-            }
-          }
-  );
-
-
-
-
-
-})
-</script>
 
 
 

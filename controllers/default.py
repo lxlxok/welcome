@@ -30,11 +30,6 @@ def job_delete():
 def job_edit():
     return dict()
 
-def boot():
-    return dict()
-
-
-
 """
 require the user to login and identify their statues
 """
@@ -51,10 +46,9 @@ def index():
         check if user identity is teacher
         """
         if person_identity == 'teacher':
-            redirect(URL('default','mainpage_teacher',args=auth))
+            redirect(URL('default','mainpage_teacher'))
         else:
-            redirect(URL('default','mainpage',args=auth))
-    logger.info("visiting index without loging")
+            redirect(URL('default','mainpage'))
     return dict()
 
 
@@ -62,17 +56,9 @@ def index():
 """
 define all the mainpage related with teacher
 """
-
+@auth.requires_login()
 def mainpage_teacher():
     return dict()
-
-def load_mainpage_t():
-    log_id = auth.user_id
-    r = db(db.auth_user.id == log_id).select().first()
-    last_name = r.last_name
-    if last_name is None:
-        last_name = 'teacher'
-    return response.json(dict(last_name=last_name))
 
 def add_post():
     """
@@ -88,49 +74,43 @@ def add_post():
     """
     renew the table post_search who followed the teacher
 
-    db.define_table('folllow_relation',
-                Field('teacher_id'),
-                Field('followed_by_id'))
-
-db.define_table('post_search',
-                Field('post_content_id','reference post_content'),
-                Field('post_to_id'),
-                Field('read_state','boolean',default=False),
-                Field('auth_name'),
-                Field('pos_title'),
-                Field('pos_time','datetime',default=datetime.utcnow())
-                )
     """
-
-
-
+    new_post = db(db.post_content.uiud_id == request.vars.uiud_id).select().first()
+    rows = db(db.folllow_relation.teacher_id == auth.user_id).select()
+    for r in rows:
+        db.post_search.insert(post_content_id=new_post.id,post_to_id=r.followed_by_id,read_state=False,auth_name=request.vars.t_name,pos_title=new_post.pos_title,pos_time=new_post.pos_time)
     return "ok"
 
 
+def delete_post():
+    db(db.post_content.uiud_id==request.vars.uiud_id).delete()
+    return "ok"
 
 def load_post():
-
     rows = db(db.post_content.user_id==auth.user_id).select(orderby=~db.post_content.id)
-    d=[{'title':r.pos_title,'content':r.pos_content,'uiud':r.uiud_id,'time':r.pos_time} for r in rows]
-    return response.json(dict(post_list=d))
-
+    r = db(db.auth_user.id == auth.user_id).select().first()
+    last_name = r.last_name
+    firt_name = r.first_name
+    t_name = last_name+''+firt_name
+    d=[{'title':r.pos_title,'content':r.pos_content,'uiud':r.uiud_id,'time':r.pos_time,'delete':False} for r in rows]
+    return response.json(dict(post_list=d,t_name=t_name))
 
 
 """
 define all the mainpage related with student
 """
+
 @auth.requires_login()
 def mainpage():
-
     """
     show the mainpage
     including the dashboard and job table
     :return: information about job board
     """
     job_list=db(db.job.id > 0).select()
+    print auth.messages
 
     return dict(job_list=job_list)
-
 
 def load_mainpage_s():
     log_id = auth.user_id
@@ -150,19 +130,39 @@ def load_mainpage_s():
     """
     unread_mess_num = db((db.post_search.post_to_id == log_id) & (db.post_search.read_state == False)).count()
 
-    return response.json(dict(remain_day=remain.days,unread_mess_num=unread_mess_num))
+    return response.json(dict(remain_day=remain_day,unread_mess_num=unread_mess_num))
 
 
-
+def follower():
+    rows = db(db.folllow_relation.teacher_id==auth.user_id).select()
+    if rows.first() is not None:
+        stu_list = []
+        for r in rows:
+            stu = db(db.auth_user.id == r.followed_by_id).select().first()
+            stu_name = stu.first_name + ' ' + stu.last_name
+            stu_list.append({'name':stu_name,'course':stu.course, 'email':stu.email})
+        return dict(exit=1,stu_list=stu_list)
+    return dict(exit=0)
 
 def message():
-    return "hello world"
+    return dict()
 
+
+'''
+return the search page for student
+which show the profile of teacher
+and make follow button avalable
+'''
 def search_user():
     email_add = request._vars['para']
     r = db(db.auth_user.email == email_add).select().first()
     is_teacher = 0
+    student_id = 0
+    teacher_id = 0
+    is_followed = 0
+
     if r is not None:
+        teacher_id = r.id
         first_name = r.first_name
         last_name = r.last_name
         statue = r.statue
@@ -170,10 +170,29 @@ def search_user():
         course = r.course
         office = r.address
         introduction = r.introduction
+        is_followed = 0
         if statue=='teacher':
             is_teacher = 1
-        return dict(exit=1,is_teacher=is_teacher,email_add=email_add,statue=statue,first_name=first_name,last_name=last_name,email=email,course=course,office=office,introduction=introduction)
-    return dict(exit=0,is_teacher=0,email_add=email_add)
+        row=db((db.folllow_relation.teacher_id == teacher_id) & (db.folllow_relation.followed_by_id == auth.user_id)).select().first()
+        if row is not None:
+            is_followed = 1
+        print(row)
+        return dict(exit=1,is_teacher=is_teacher,is_followed=is_followed,student_id=auth.user_id,teacher_id=teacher_id,email_add=email_add,statue=statue,first_name=first_name,last_name=last_name,email=email,course=course,office=office,introduction=introduction)
+    return dict(exit=0,is_teacher=0,is_followed=is_followed,student_id=auth.user_id,teacher_id=teacher_id,email_add=email_add)
+
+
+def add_follow():
+    r_student_id = request.vars.student_id
+    r_teacher_id = request.vars.teacher_id
+    r_to_follow = request.vars.to_follow
+    row=db((db.folllow_relation.teacher_id == r_teacher_id) & (db.folllow_relation.followed_by_id == r_student_id)).select().first()
+    if r_to_follow == '1':
+        if row is None:
+            db.folllow_relation.insert(teacher_id=r_teacher_id,followed_by_id=r_student_id)
+    else:
+        if row is not None:
+            db((db.folllow_relation.teacher_id == r_teacher_id) & (db.folllow_relation.followed_by_id == r_student_id)).delete()
+    return "ok"
 
 
 

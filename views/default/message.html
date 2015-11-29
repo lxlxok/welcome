@@ -1,10 +1,103 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title></title>
-</head>
-<body>
+{{extend 'layout.html'}}
 
-</body>
-</html>
+<style>
+    div.jumbotron-h1{
+        text-align: center;
+    }
+
+    div.jumbotron-h2{
+        align-items: center;
+    }
+
+</style>
+
+
+<nav class="navbar navbar-inverse navbar-fixed-top">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="#">GIT LUCK</a>
+    </div>
+    <div>
+      <ul class="nav navbar-nav">
+        <li class="active"><a href="{{=URL('default', 'mainpage')}}"><span class="glyphicon glyphicon-home"></span>Home Page</a></li>
+        <li class="active"><a href="{{=URL('default', 'message')}}"><span class="glyphicon glyphicon-envelope"></span>Message  <span id="id_unread_mess" style="color:black" class="badge"></span></a></li>
+      </ul>
+
+      <form class="navbar-form navbar-left" role="search" action={{=URL('default', 'search_user')}} method="post" id="nameform">
+        <div class="form-group">
+          <input type="text" class="form-control" placeholder="Search" name="para">
+        </div>
+        <button type="submit" class="btn btn-primary" value="submit" form="nameform"><span class="glyphicon glyphicon-search"></span></button>
+      </form>
+
+
+      <ul class="nav navbar-nav navbar-right">
+         <li><a href="{{=URL('default', 'user', args=['profile'])}}"><span class="glyphicon glyphicon-user"></span>Profile</a></li>
+         <li><a href="{{=URL('default', 'user', args=['change_password'])}}"><span class="glyphicon glyphicon-lock"></span>Password</a></li>
+         <li><a href="{{=URL('default', 'user', args=['logout'])}}"><span class="glyphicon glyphicon-off"></span>Log out</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div id="target">
+
+</div>
+
+
+
+
+
+<script id="template" type="text/ractive">
+
+<div class="container">
+  <div class="jumbotron">
+    <div class="jumbotron-h1"><h1>   {%remain_day%} days left for job seeking</h1></div>
+    <a href="{{=URL('default','job_create')}}" class="btn btn-info btn-lg"><span class="glyphicon glyphicon-search"></span> Create</a>
+  </div>
+</div>
+
+</script>
+
+
+
+
+<script>
+
+$(function() {
+
+
+    // Ractive object
+    var MAIN = new Ractive({
+        el: '#target',
+        template: '#template',
+        delimiters: ['{%', '%}'],
+        tripleDelimiters: ['{%%', '%%}'],
+        data: {
+            remain_day: 0,
+            unread_mess_num: 0,
+        },
+    });
+
+  // Loads the initial information of mainpage for student.
+  $.ajax("{{=URL('default', 'load_mainpage_s')}}",
+          {
+
+            method: 'POST',
+            success: function (data) {
+              MAIN.set('remain_day', data['remain_day']);
+              MAIN.set('unread_mess_num',data['unread_mess_num']);
+              $('#id_unread_mess').text(data['unread_mess_num']);
+            }
+          }
+  );
+
+
+
+})
+</script>
+
+
+
+
+

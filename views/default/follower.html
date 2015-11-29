@@ -1,0 +1,67 @@
+{{extend 'layout.html'}}
+
+<style>
+
+</style>
+
+<nav class="navbar navbar-inverse navbar-fixed-top">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="#">GIT LUCK</a>
+    </div>
+    <div>
+      <ul class="nav navbar-nav">
+        <li class="active"><a href="{{=URL('default', 'mainpage_teacher')}}"><span class="glyphicon glyphicon-home"></span>Home Page</a></li>
+        <li class="active"><a href="{{=URL('default', 'follower')}}"><span class="glyphicon glyphicon-heart"></span>Fans</a></li>
+      </ul>
+
+      <ul class="nav navbar-nav navbar-right">
+         <li><a href="{{=URL('default', 'user', args=['profile'])}}"><span class="glyphicon glyphicon-user"></span>Profile</a></li>
+         <li><a href="{{=URL('default', 'user', args=['change_password'])}}"><span class="glyphicon glyphicon-lock"></span>Password</a></li>
+          <li><a href="{{=URL('default', 'user', args=['logout'])}}"><span class="glyphicon glyphicon-off"></span>Log out</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+{{if exit == 1:}}
+
+<div class="container">
+<div class="panel panel-default">
+  <!-- Default panel contents -->
+  <div class="panel-heading">Fans table</div>
+  <div class="panel-body">
+    <p>Thank you for helping us</p>
+  </div>
+
+  <!-- Table -->
+  <table class="table table-striped">
+
+    <tbody>
+    <tr>
+    <th>name</th>
+    <th>course</th>
+    <th>email</th>
+    </tr>
+    {{for r in stu_list: }}
+    <tr>
+    <td>{{=r['name']}}</td>
+    <td>{{=r['course']}}</td>
+    <td>{{=r['email']}}</td>
+    </tr>
+    {{pass}}
+    </tbody>
+
+  </table>
+</div>
+</div>
+
+
+
+{{else:}}
+    <div class="container">
+        <div class="alert alert-info" role="alert">don't have follower yet! Student can follow you by search your email in navbar</div>
+    </div>
+
+{{pass}}
