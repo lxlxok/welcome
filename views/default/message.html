@@ -11,7 +11,6 @@
 
 </style>
 
-
 <nav class="navbar navbar-inverse navbar-fixed-top">
   <div class="container-fluid">
     <div class="navbar-header">
@@ -45,21 +44,50 @@
 </div>
 
 
-
-
-
 <script id="template" type="text/ractive">
 
-<div class="container">
-  <div class="jumbotron">
-    <div class="jumbotron-h1"><h1>   {%remain_day%} days left for job seeking</h1></div>
-    <a href="{{=URL('default','job_create')}}" class="btn btn-info btn-lg"><span class="glyphicon glyphicon-search"></span> Create</a>
-  </div>
+
+
+<div class="container-fluid main-container">
+
+<div class="col-md-3">
+
+<div class="panel panel-info">
+  <div class="panel-heading"><h3 class="panel-title">
+      <i class="glyphicon glyphicon-user"></i>
+      Following table
+    </h3></div>
+
+  <ul class="list-group">
+      {% #each follow_list:num %}
+    <li class="list-group-item">{% name %}</li>
+      {% /each %}
+  </ul>
 </div>
 
+</div>
+      <div class="col-md-9">
+<div class="panel-group" id="accordion">
+{% #each message_list:num %}
+<div class="panel {%panel%}">
+
+    <div class="panel-heading">
+      <div>
+      <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#collapse{%num%}" data-readid={%num%} on-click="read-message"><span> {% pos_title %} </span></a> <span style="float:right"><button data-arrayid={%num%} on-click="delete-post"><span class="glyphicon glyphicon-trash"></span></button></span>
+      </h4>
+      </div>
+    </div>
+    <div id="collapse{%num%}" class="panel-collapse collapse">
+      <div class="panel-body">{%% pos_content %%}</div>
+      <div class="panel-footer">{% auth_name %} post at {% pos_time %}</div>
+    </div>
+  </div>
+{% /each %}
+</div>
+</div>
+      </div>
 </script>
-
-
 
 
 <script>
@@ -74,23 +102,103 @@ $(function() {
         delimiters: ['{%', '%}'],
         tripleDelimiters: ['{%%', '%%}'],
         data: {
-            remain_day: 0,
-            unread_mess_num: 0,
+            follow_list: [],
+            message_list: [],
+            unread_mes_num: 0
         },
     });
 
   // Loads the initial information of mainpage for student.
-  $.ajax("{{=URL('default', 'load_mainpage_s')}}",
+  $.ajax("{{=URL('default', 'load_message_s')}}",
           {
 
             method: 'POST',
             success: function (data) {
-              MAIN.set('remain_day', data['remain_day']);
-              MAIN.set('unread_mess_num',data['unread_mess_num']);
-              $('#id_unread_mess').text(data['unread_mess_num']);
+              var unread_num = 0
+              MAIN.set('follow_list', data['follow_list']);
+              var message_list=data['message_list'];
+                for (var i = 0; i < message_list.length; i++) {
+                    if (message_list[i]['read_state']==true) {
+                        message_list[i]['panel']='panel-success';
+                    } else {
+                        message_list[i]['panel']='panel-danger';
+                        unread_num=unread_num+1;
+                    }
+                }
+              MAIN.set('message_list',message_list);
+              $('#id_unread_mess').text(unread_num);
+              MAIN.set('unread_mes_num',unread_num)
             }
           }
   );
+
+     MAIN.on("read-message", function(e) {
+         var areaid = $(e.node).data("readid");
+         var tmppost=MAIN.get('message_list');
+         var r_state =tmppost[areaid]['read_state'];
+         var tmpid =tmppost[areaid]['pos_id'];
+         if (r_state == false) {
+
+          read_post(tmpid,areaid);
+         }
+     });
+
+
+     MAIN.on("delete-post", function(e) {
+    var areaid = $(e.node).data("arrayid");
+    var tmppost=MAIN.get('message_list');
+    var tmpid =tmppost[areaid]['pos_id'];
+    delete_post(tmpid,areaid);
+  });
+
+
+     function delete_post(darft_id,num_id) {
+    $.ajax("{{=URL('default', 'delete_message', user_signature=True)}}",
+            {
+
+              data: {
+                post_id: darft_id
+              },
+              method: 'POST',
+              success: function() {
+
+              var tmp_list=MAIN.get("message_list");
+              tmp_list.splice(num_id,1);
+              MAIN.set('message_list',tmp_list);
+              },
+              error: function() {
+              alert("Submit Error!");
+              }
+            }
+    );
+  }
+
+       function read_post(darft_id,num_id) {
+    $.ajax("{{=URL('default', 'read_message', user_signature=True)}}",
+            {
+
+              data: {
+                post_id: darft_id
+              },
+              method: 'POST',
+              success: function() {
+
+              var tmp_list=MAIN.get("message_list");
+              tmp_list[num_id]['read_state']=true;
+              tmp_list[num_id]['panel']='panel-success';
+              MAIN.set('message_list',tmp_list);
+              var unread_num=MAIN.get("unread_mes_num");
+              unread_num = unread_num - 1;
+              $('#id_unread_mess').text(unread_num);
+              MAIN.set('unread_mes_num',unread_num);
+              },
+              error: function() {
+              }
+            }
+    );
+  }
+
+
 
 
 

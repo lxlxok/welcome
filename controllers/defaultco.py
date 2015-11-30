@@ -66,7 +66,6 @@ def post():
     return dict(log_id=log_id,board_id=board_id,board_name=board_name)
 
 
-
 def user():
     """
     exposes:

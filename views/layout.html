@@ -87,19 +87,24 @@
 
     </div>
 
-
+    {{block footer}} <!-- this is default footer -->
+    <footer class="footer">
+      <div class="container-fluid">
+        <div class="copyright pull-left">{{=T('Copyright')}} &#169; {{=request.now.year}}</div>
+          <div id="poweredBy" class="pull-right">
+              {{=T('Contact us')}}
+               <!-- AddToAny BEGIN -->
+            <a href="email">email</a>
+          </div>
+      </div>
+    </footer>
+    {{end}}
     <!-- The javascript =============================== -->
     <script src="{{=URL('static','js/bootstrap.min.js')}}"></script>
     <script src="{{=URL('static','js/web2py-bootstrap3.js')}}"></script>
     <script src="{{=URL('static', 'js/ractive.min.js')}}"></script>
 
 
-
-<script src="{{=URL('static', 'components/wysihtml5x/dist/wysihtml5x-toolbar.min.js')}}"></script>
-<script src="{{=URL('static', 'components/jquery/dist/jquery.min.js')}}"></script>
-<script src="{{=URL('static', 'components/bootstrap/dist/js/bootstrap.min.js')}}"></script>
-<script src="{{=URL('static', 'components/handlebars/handlebars.runtime.min.js')}}"></script>
-<script src="{{=URL('static', 'components/dist/bootstrap3-wysihtml5.min.js')}}"></script>
 
 
 

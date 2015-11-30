@@ -10,26 +10,6 @@
 
 from datetime import datetime
 
-
-def job_create():
-    """
-    create a new job information for the job table
-    """
-
-    form = SQLFORM(db.job)
-    now = datetime.utcnow()
-    form.vars.data_time=now.date()
-    if form.process().accepted:
-       redirect(URL('default','mainpage'))
-    return dict(form=form)
-
-
-def job_delete():
-    return dict()
-
-def job_edit():
-    return dict()
-
 """
 require the user to login and identify their statues
 """
@@ -60,6 +40,9 @@ define all the mainpage related with teacher
 def mainpage_teacher():
     return dict()
 
+"""
+ajax operation
+"""
 def add_post():
     """
     add the content to the post_content table
@@ -97,20 +80,29 @@ def load_post():
 
 
 """
+define the Fans page for teacher
+"""
+
+def follower():
+    rows = db(db.folllow_relation.teacher_id==auth.user_id).select()
+    if rows.first() is not None:
+        stu_list = []
+        for r in rows:
+            stu = db(db.auth_user.id == r.followed_by_id).select().first()
+            stu_name = stu.first_name + ' ' + stu.last_name
+            stu_list.append({'name':stu_name,'course':stu.course, 'email':stu.email})
+        return dict(exit=1,stu_list=stu_list)
+    return dict(exit=0)
+
+
+"""
 define all the mainpage related with student
 """
 
 @auth.requires_login()
 def mainpage():
-    """
-    show the mainpage
-    including the dashboard and job table
-    :return: information about job board
-    """
-    job_list=db(db.job.id > 0).select()
-    print auth.messages
+    return dict()
 
-    return dict(job_list=job_list)
 
 def load_mainpage_s():
     log_id = auth.user_id
@@ -128,31 +120,73 @@ def load_mainpage_s():
     """
     calculate how many post unreaded
     """
+    job_rows = db(db.job.id>0).select(orderby=~db.job.id)
+    job_list = [{'uiud_id':r.uiud_id,'job_important':r.job_important,'job_name':r.job_name,'job_title':r.job_title,'job_state':r.job_state,'job_contact':r.job_contact,'job_email':r.job_email,'data_time':r.data_time,'edit':False} for r in job_rows]
     unread_mess_num = db((db.post_search.post_to_id == log_id) & (db.post_search.read_state == False)).count()
+    return response.json(dict(remain_day=remain_day,unread_mess_num=unread_mess_num,job_list=job_list))
 
-    return response.json(dict(remain_day=remain_day,unread_mess_num=unread_mess_num))
 
 
-def follower():
-    rows = db(db.folllow_relation.teacher_id==auth.user_id).select()
-    if rows.first() is not None:
-        stu_list = []
-        for r in rows:
-            stu = db(db.auth_user.id == r.followed_by_id).select().first()
-            stu_name = stu.first_name + ' ' + stu.last_name
-            stu_list.append({'name':stu_name,'course':stu.course, 'email':stu.email})
-        return dict(exit=1,stu_list=stu_list)
-    return dict(exit=0)
+def add_job():
+    now = datetime.utcnow().date()
+    db.job.update_or_insert((db.job.uiud_id == request.vars.uiud_id),
+            uiud_id=request.vars.uiud_id,
+            job_important=request.vars.job_important,
+            job_name=request.vars.job_name,
+            job_title=request.vars.job_title,
+            job_state=request.vars.job_state,
+            job_contact=request.vars.job_contact,
+            job_email=request.vars.job_email,
+            data_time=now)
+    return "ok"
 
+def update_star():
+    db(db.job.uiud_id == request.vars.uiud_id).update(job_important=request.vars.job_important)
+    return "ok"
+
+def delete_job():
+    db(db.job.uiud_id == request.vars.uiud_id).delete()
+    return "ok"
+
+"""
+define message page for student
+"""
 def message():
     return dict()
 
+def load_message_s():
+    rows = db(db.folllow_relation.followed_by_id==auth.user_id).select()
+    follow_list=[]
+    message_list=[]
+    if rows.first() is not None:
+        for r in rows:
+            teacher = db(db.auth_user.id==r.teacher_id).select().first()
+            if teacher is not None:
+                t_first_name = teacher.first_name
+                t_last_name = teacher.last_name
+                t_name = t_first_name + ' ' + t_last_name
+                follow_list.append({'name':t_name,'id':r.id})
+    pos_rows = db(db.post_search.post_to_id == auth.user_id).select(orderby=~db.post_search.id)
+    if pos_rows.first() is not None:
+        for pos_r in pos_rows:
+            content = db(db.post_content.id==pos_r.post_content_id).select().first()
+            message_list.append({'pos_id':pos_r.id,'read_state':pos_r.read_state,'auth_name':pos_r.auth_name,'pos_title':pos_r.pos_title,'pos_time':pos_r.pos_time,'pos_content':content.pos_content,'panel':''})
+    return response.json(dict(follow_list=follow_list,message_list=message_list))
 
-'''
+def delete_message():
+    db(db.post_search.id==request.vars.post_id).delete()
+    return "ok"
+
+def read_message():
+    db(db.post_search.id==request.vars.post_id).update(read_state=True)
+    return "ok"
+
+"""
 return the search page for student
 which show the profile of teacher
 and make follow button avalable
-'''
+"""
+
 def search_user():
     email_add = request._vars['para']
     r = db(db.auth_user.email == email_add).select().first()
@@ -194,7 +228,8 @@ def add_follow():
             db((db.folllow_relation.teacher_id == r_teacher_id) & (db.folllow_relation.followed_by_id == r_student_id)).delete()
     return "ok"
 
-
+def email():
+    return "Hi! feel free to contact me at xli111@ucsc.edu"
 
 
 @auth.requires_login()

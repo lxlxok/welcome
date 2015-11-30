@@ -45,7 +45,7 @@
 <div class="container">
 
 
-    <div class="panel panel-default">
+    <div class="panel panel-success">
   <!-- Default panel contents -->
   <div class="panel-heading">user profile</div>
 
@@ -69,7 +69,7 @@
     </div>
 
   {{else:}}
-    <div class="jumbotron-h1"><h2>{{=email_add}} doesn't exit, please search again</h2></div>
+    <div class="jumbotron-h1">{{=email_add}} doesn't exit, please search again</div>
   {{pass}}
 
 </div>
@@ -81,7 +81,7 @@
   {%#if is_followed === 1 %}
   <button class="btn btn-info" on-click="un_follow" ><span class="glyphicon glyphicon-eye-close"></span>unfollow</button>
   {% else %}
-  <button class="btn btn-success" on-click="follow" ><span class="glyphicon glyphicon-eye-open"></span>follow</button>
+  <button class="btn btn-success" on-click="follow" ><span class="glyphicon glyphicon-eye-open"> </span> follow</button>
   {% /if%}
  {% /if %}
 {% /if %}

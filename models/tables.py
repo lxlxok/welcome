@@ -39,14 +39,21 @@ db.define_table('post_search',
                 Field('pos_time','datetime',default=datetime.utcnow())
                 )
 
-
-
-
-
 db.define_table('job',
+                Field('uiud_id'),
+                Field('job_name',default=''),
+                Field('job_title',default=''),
+                Field('job_state',default='apply'),
+                Field('job_contact',default=''),
+                Field('job_email',default=''),
+                Field('job_important','boolean',default=False),
+                Field('data_time','date',default=datetime.utcnow().date())
+                )
+
+db.define_table('job_old',
                 Field('job_name',requires=IS_NOT_EMPTY(error_message='please enter the name for company')),
                 Field('job_title',default='SDE'),
-                Field('job_state',default='apply',requires=IS_IN_SET(['apply','telephone','online','onsite','offer','refused'])),
+                Field('job_state',default='apply',requires=IS_IN_SET(['apply','telephone','onsite','offer','refused'])),
                 Field('job_way',default='recommend',requires=IS_IN_SET(['recommend','jobfair','internet'])),
                 Field('job_contact',default=''),
                 Field('job_email',default=''),
@@ -56,24 +63,4 @@ db.define_table('job',
                 Field('data_time','date',default=datetime.utcnow().date(),readable=False, writable=False)
                 )
 
-db.define_table('profile',
-                Field('git_name',requires=IS_NOT_EMPTY()),
-                Field('git_auth_id','reference auth_user',default=auth.user_id),
-                Field('git_identity',requires=IS_IN_SET(['student','teacher','manager']))
-                )
-
-db.define_table('board',
-                Field('title'),
-                Field('draft_id'),
-                Field('is_draft','boolean'),
-                Field('editing','boolean'),
-                Field('created_by', 'reference auth_user', default=auth.user_id))
-
-
-db.define_table('post',
-                Field('board_id'),
-                Field('draft_id'),
-                Field('created_by'),
-                Field('title'),
-                Field('body','text'))
 

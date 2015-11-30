@@ -50,14 +50,96 @@
 
 <script id="template" type="text/ractive">
 
-<div class="container">
-  <div class="jumbotron">
-    <div class="jumbotron-h1"><h1>   {%remain_day%} days left for job seeking</h1></div>
-    <a href="{{=URL('default','job_create')}}" class="btn btn-info btn-lg"><span class="glyphicon glyphicon-search"></span> Create</a>
+<div class="container-fluibackground">
+  <div class="jumbotron text-center" style="background-color:#d9edf7">
+    <div><h1>   {%remain_day%} days left for job seeking</h1></div>
   </div>
 </div>
 
+<div class="container-fluibackground">
+<div class="panel panel-warning">
+  <div class="panel-heading"><span><button  class="btn btn-success" on-click="table-create"><span class="glyphicon glyphicon-plus"></span> Create</button></span><span style="float:center">Job Information</span>
+</div>
+<table class="table table-striped">
+<tbody>
+<tr>
+
+            <th>#</th>
+            <th>Star</th>
+            <th>Company</th>
+            <th>Position</th>
+            <th>State</th>
+            <th>Contactor</th>
+            <th>Email</th>
+            <th>Update</th>
+            <th></th>
+
+</tr>
+{% #each job_list:num %}
+<tr>
+
+    <td>{%num+1%}</td>
+    <td>
+    {% #if job_important %}
+    <a><i class="fa fa-star" data-starid={%num%} on-click="empty-star"></i></a>
+    {% else %}
+    <a><i class="fa fa-star-o" data-starid={%num%} on-click="fill-star"></i></a>
+    {% /if %}
+    </td>
+    <td>
+    {% #if edit %}
+    <input type="text" value="{%job_name%}">
+    {% else %}
+    {%job_name%}
+    {% /if %}
+    </td>
+    <td>
+    {% #if edit %}
+    <input type="text" value="{%job_title%}">
+    {% else %}
+    {%job_title%}
+    {% /if %}
+    </td>
+    <td>
+    {% #if edit %}
+    <input type="text" value="{%job_state%}">
+    {% else %}
+    {%job_state%}
+    {% /if %}
+    </td>
+    <td>
+    {% #if edit %}
+    <input type="text" value="{%job_contact%}">
+    {% else %}
+    {%job_contact%}
+    {% /if %}
+    </td>
+    <td>
+    {% #if edit %}
+    <input type="text" value="{%job_email%}">
+    {% else %}
+    {%job_email%}
+    {% /if %}
+    </td>
+    <td>
+    {%data_time%}
+    </td>
+    <td>
+    {% #if edit %}
+    <button  class="fa fa-floppy-o" data-saveid={%num%}  on-click="savejob"></button>
+    {% else %}
+    <button  class="fa fa-pencil" data-editid={%num%}  on-click="editjob"></button>
+    {% /if %}
+    <span style="padding-right:15px"> </span><button class="fa fa-times" data-deleteid={%num%} on-click="deletejob"></button></td>
+
+</tr>
+{% /each %}
+</tbody>
+</div>
+</table>
+</div>
 </script>
+
 
 
 
@@ -76,6 +158,7 @@ $(function() {
         data: {
             remain_day: 0,
             unread_mess_num: 0,
+            job_list:[]
         },
     });
 
@@ -87,11 +170,163 @@ $(function() {
             success: function (data) {
               MAIN.set('remain_day', data['remain_day']);
               MAIN.set('unread_mess_num',data['unread_mess_num']);
+              MAIN.set('job_list',data['job_list']);
               $('#id_unread_mess').text(data['unread_mess_num']);
             }
           }
   );
 
+    MAIN.on("fill-star", function(e) {
+    var areaid = $(e.node).data("starid");
+    update_star(areaid,true);
+
+    });
+
+    MAIN.on("empty-star", function(e) {
+    var areaid = $(e.node).data("starid");
+    update_star(areaid,false);
+    });
+
+    MAIN.on("deletejob", function(e){
+       var areaid = $(e.node).data("deleteid");
+       delete_job(areaid);
+    });
+
+     MAIN.on("editjob", function(e){
+       var areaid = $(e.node).data("editid");
+       var tmp_list=MAIN.get('job_list');
+       tmp_list[areaid]['edit'] = true;
+       MAIN.set('job_list',tmp_list);
+    });
+
+    MAIN.on("savejob", function(e){
+       var areaid = $(e.node).data("saveid");
+       update_table(areaid);
+    });
+
+
+
+     MAIN.on("table-create", function() {
+        var d = new Date();
+        var now = d.toString().substr(4,11);
+        var new_uiud = generateUUID();
+        send_table(new_uiud,false,'','','apply','','',now)
+
+  });
+
+     
+     function update_star(areaid,job_important) {
+
+       var tmp_list=MAIN.get('job_list');
+       uiud_id=tmp_list[areaid]['uiud_id']
+
+         $.ajax({
+      url: "{{=URL('default', 'update_star')}}",
+      method: "POST",
+      data: {
+          uiud_id: uiud_id,
+          job_important:job_important,
+
+      },
+      success: function (data) {
+        tmp_list[areaid]['job_important']=job_important;
+        MAIN.set('job_list',tmp_list);
+      }
+    })
+     }
+
+
+     function delete_job(areaid) {
+
+       var tmp_list=MAIN.get('job_list');
+       uiud_id=tmp_list[areaid]['uiud_id']
+
+         $.ajax({
+      url: "{{=URL('default', 'delete_job')}}",
+      method: "POST",
+      data: {
+          uiud_id: uiud_id,
+
+      },
+      success: function (data) {
+        tmp_list.splice(areaid,1);
+        MAIN.set('job_list',tmp_list);
+      }
+    })
+     }
+
+         function update_table(areaid) {
+             var tmp_list=MAIN.get('job_list');
+             var uiud_id = tmp_list[areaid]['uiud_id'];
+             var job_important = tmp_list[areaid]['job_important'];
+             var job_name = tmp_list[areaid]['job_name'];
+             var job_title = tmp_list[areaid]['job_title'];
+             var job_state = tmp_list[areaid]['job_state'];
+             var job_contact = tmp_list[areaid]['job_contact'];
+             var job_email = tmp_list[areaid]['job_email'];
+             var data_time = tmp_list[areaid]['data_time'];
+
+         $.ajax({
+      url: "{{=URL('default', 'add_job')}}",
+      method: "POST",
+      data: {
+          uiud: uiud_id,
+          job_important:job_important,
+          job_name:job_name,
+          job_title:job_title,
+          job_state:job_state,
+          job_contact:job_contact,
+          job_email:job_email,
+          data_time:data_time
+      },
+      success: function (data) {
+       tmp_list[areaid]['edit'] = false;
+       MAIN.set('job_list',tmp_list);
+      }
+    })
+
+     }
+
+
+
+     function send_table(uiud_id,job_important,job_name,job_title,job_state,job_contact,job_email,data_time) {
+         $.ajax({
+      url: "{{=URL('default', 'add_job')}}",
+      method: "POST",
+      data: {
+          uiud: uiud_id,
+          job_important:job_important,
+          job_name:job_name,
+          job_title:job_title,
+          job_state:job_state,
+          job_contact:job_contact,
+          job_email:job_email,
+          data_time:data_time
+      },
+      success: function (data) {
+        var empty={uiud_id:uiud_id,job_important:job_important,job_name:job_name,job_title:job_title,job_state:job_state,job_contact:job_contact,job_email:job_email,data_time:data_time,edit:true}
+        var tmp_list = MAIN.get("job_list");
+        tmp_list.splice(0,0,empty);
+        MAIN.set('job_list',tmp_list);
+      }
+    })
+
+     }
+
+
+
+    function generateUUID(){
+    var d = new Date().getTime();
+    if(window.performance && typeof window.performance.now === "function"){
+        d += performance.now();; //use high-precision timer if available
+    }
+    var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = (d + Math.random()*16)%16 | 0;
+        d = Math.floor(d/16);
+        return (c=='x' ? r : (r&0x3|0x8)).toString(16);
+    });
+    return uuid;
+  }
 
 
 })
@@ -107,41 +342,3 @@ $(function() {
 
 
 
-
-
-<div class="container">
-    <h4>Job Information</h4>
-    <table class="table table-striped">
-        <thead>
-        <tr>
-            <th>Start</th>
-            <th>Company</th>
-            <th>Position</th>
-            <th>State</th>
-            <th>Contactor</th>
-            <th>Email</th>
-            <th>Update</th>
-        </tr>
-        </thead>
-        <tbody>
-        {{if job_list is not None:}}
-            {{for job in job_list:}}
-                <tr>
-                    {{if job.job_important==False:}}
-                    <td><i class="fa fa-star-o"></i></td>
-                    {{else:}}
-                    <td><i class="fa fa-star"></i></td>
-                    {{pass}}
-                    <td>{{=job.job_name}}</td>
-                    <td>{{=job.job_title}}</td>
-                    <td>{{=job.job_state}}</td>
-                    <td>{{=job.job_contact}}</td>
-                    <td>{{=job.job_email}}</td>
-                    <td>{{=job.data_time}}</td>
-                </tr>
-             {{pass}}
-        {{pass}}
-        </tbody>
-    </table>
-
-<div>

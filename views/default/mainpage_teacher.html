@@ -29,7 +29,7 @@
 <link rel="stylesheet" type="text/css" href="{{=URL('static','components/dist/bootstrap3-wysihtml5.min.css')}}"/>
 
 <div class="container">
-  <div class="jumbotron" style="margin-top:40px">
+  <div class="jumbotron" style="background-color: #d9edf7">
     <h1><small>post new message</small></h1>
     <input style="width:50%" id="pos_title" placeholder="title" name="title"/>
     <hr style="border-color: white"/>
@@ -179,19 +179,23 @@
 
 <div class="container">
 
-{% #each post_list:num %}
 
- <div class="panel panel-default" style="width:100%">
-  <div class="panel-heading">
-    <span> {% title %} </span> <span style="float:right"><button data-arrayid={%num%} on-click="delete-post"><span class="glyphicon glyphicon-trash"></span></button></span>
+<div class="panel-group" id="accordion">
+{% #each post_list:num %}
+  <div class="panel panel-success">
+    <div class="panel-heading">
+    <h4 class="panel-title">
+   <a data-toggle="collapse" data-parent="#accordion" href="#collapse{%num%}"> <span> {% title %} </span><span style="float:right"><button data-arrayid={%num%} on-click="delete-post"><span class="glyphicon glyphicon-trash"></span></button></span></a>
+    </h4>
+    </div>
+    <div id="collapse{%num%}" class="panel-collapse collapse">
+      <div class="panel-body">{%% content %%}</div>
+      <div class="panel-footer">{% time %}</div>
+    </div>
   </div>
-  <div class="panel-body">
-    {%% content %%}
-  </div>
-  <div class="panel-footer">{% time %}</div>
+  {% /each %}
 </div>
 
-{% /each %}
 
 </div>
 
