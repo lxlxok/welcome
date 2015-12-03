@@ -138,6 +138,7 @@ def add_job():
             job_contact=request.vars.job_contact,
             job_email=request.vars.job_email,
             data_time=now)
+    print(request.vars.uiud_id)
     return "ok"
 
 def update_star():
@@ -274,3 +275,5 @@ def call():
     return service()
 
 
+def tmp():
+    return dict()

@@ -9,7 +9,11 @@
         align-items: center;
     }
 
+
+
 </style>
+</script>
+
 
 
 <nav class="navbar navbar-inverse navbar-fixed-top">
@@ -24,6 +28,9 @@
       </ul>
 
       <form class="navbar-form navbar-left" role="search" action={{=URL('default', 'search_user')}} method="post" id="nameform">
+
+
+
         <div class="form-group">
           <input type="text" class="form-control" placeholder="Search" name="para">
         </div>
@@ -53,8 +60,99 @@
 <div class="container-fluibackground">
   <div class="jumbotron text-center" style="background-color:#d9edf7">
     <div><h1>   {%remain_day%} days left for job seeking</h1></div>
+
+
+
+<!-- Trigger the modal with a button -->
+<button type="button" class="btn btn-info btn-lg" data-toggle="modal" on-click="get-modal" data-target="#myModal">Job List</button>
+<button type="button" class="btn btn-info btn-lg" data-toggle="modal" on-click="get-graph" data-target="#myModal_g">Job Graph</button>
   </div>
 </div>
+
+<!-- Modal -->
+<div id="myModal" class="modal fade" role="dialog">
+  <div class="modal-dialog modal-lg">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">JOB LIST</h4>
+      </div>
+      <div class="modal-body">
+
+        <table class="table table-striped">
+        <tbody>
+        <tr>
+
+            <th>#</th>
+            <th on-click="oo:job_important"><i class="fa fa-caret-down"></i>Star</th>
+            <th on-click="oo:job_name"><i class="fa fa-caret-down"></i>Company</th>
+            <th on-click="oo:job_title"><i class="fa fa-caret-down"></i>Position</th>
+            <th on-click="oo:job_state"><i class="fa fa-caret-down"></i>State</th>
+            <th on-click="oo:job_contact"><i class="fa fa-caret-down"></i>Contactor</th>
+            <th on-click="oo:job_email"><i class="fa fa-caret-down"></i>Email</th>
+            <th on-click="oo:data_time"><i class="fa fa-caret-down"></i>Update</th>
+        </tr>
+        {% #each sort(modal_list,sortColumn):m_num %}
+        <tr>
+        <td>{%m_num+1%}</td>
+        <td>
+        {% #if job_important %}
+         <a><i class="fa fa-star"></i></a>
+        {% else %}
+        <a><i class="fa fa-star-o"></i></a>
+        {% /if %}
+        </td>
+        <td>{%job_name%}</td>
+        <td>{%job_title%}</td>
+        <td>{%job_state%}</td>
+        <td>{%job_contact%}</td>
+        <td>{%job_email%}</td>
+        <td>{%data_time%}</td>
+        </tr>
+        {% /each %}
+        </tbody>
+        </table>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+
+<!-- Modal -->
+<div id="myModal_g" class="modal fade" role="dialog">
+  <div class="modal-dialog modal-lg">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">JOB STATISTIC</h4>
+      </div>
+      <div class="modal-body">
+
+
+      <div id="container" style="min-width: 850px; height: 400px; margin: 0 auto"></div>
+
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+
 
 <div class="container-fluibackground">
 <div class="panel panel-warning">
@@ -102,7 +200,13 @@
     </td>
     <td>
     {% #if edit %}
-    <input type="text" value="{%job_state%}">
+
+    <select value='{%job_state%}'>
+    <option selected>apply</option>
+    <option>phone</option>
+    <option>onsite</option>
+    <option>offer</option>
+    </select>
     {% else %}
     {%job_state%}
     {% /if %}
@@ -148,6 +252,57 @@
 
 $(function() {
 
+    var modal_graph=[{
+            name: 'Apply',
+            data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        }, {
+            name: 'Phone Interview',
+           data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        }, {
+            name: 'Onsite Interview',
+            data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        }, {
+            name: 'Offer',
+            data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        }]
+
+function build() {
+    $('#container').highcharts({
+        title: {
+            text: 'Monthly Average Job Statistic',
+            x: -20 //center
+        },
+        subtitle: {
+            text: 'Source: gitluck.com',
+            x: -20
+        },
+        xAxis: {
+            categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        },
+        yAxis: {
+            title: {
+                text: 'Numbers'
+            },
+            plotLines: [{
+                value: 0,
+                width: 1,
+                color: '#808080'
+            }]
+        },
+        tooltip: {
+            valueSuffix: ''
+        },
+        legend: {
+            layout: 'vertical',
+            align: 'right',
+            verticalAlign: 'middle',
+            borderWidth: 0
+        },
+        series: modal_graph,
+    });
+};
+
 
     // Ractive object
     var MAIN = new Ractive({
@@ -158,9 +313,213 @@ $(function() {
         data: {
             remain_day: 0,
             unread_mess_num: 0,
-            job_list:[]
+            job_list:[],
+            modal_list:[],
+
+            sort: function ( array, sortColumn ) {
+            array = array.slice(); // clone, so we don't modify the underlying data
+
+            return array.sort( function ( a, b ) {
+            return a[ sortColumn ] < b[ sortColumn ] ? -1 : 1;
+            });
+            }
         },
     });
+
+
+
+
+
+MAIN.on("get-graph",function(){
+     var tmp_list=MAIN.get("job_list");
+
+     for(var i = 0; i < tmp_list.length; i++) {
+           var m=tmp_list[i]['data_time'].substr(5,6);
+           var month =  m.substr(0,2);
+         if (tmp_list[i]['job_state'] == 'apply'){
+
+           switch(month) {
+               case '01':
+                   modal_graph[0]['data'][0]++;
+                   break;
+               case '02':
+                   modal_graph[0]['data'][1]++;
+                   break;
+               case '03':
+                   modal_graph[0]['data'][2]++;
+                   break;
+               case '04':
+                   modal_graph[0]['data'][3]++;
+                   break;
+               case '05':
+                   modal_graph[0]['data'][4]++;
+                   break;
+               case '06':
+                   modal_graph[0]['data'][5]++;
+                   break;
+               case '07':
+                   modal_graph[0]['data'][6]++;
+                   break;
+               case '08':
+                   modal_graph[0]['data'][7]++;
+                   break;
+               case '09':
+                   modal_graph[0]['data'][8]++;
+                   break;
+               case '10':
+                   modal_graph[0]['data'][9]++;
+                   break;
+               case '11':
+                   modal_graph[0]['data'][10]++;
+                   break;
+               case '12':
+                   modal_graph[0]['data'][11]++;
+                   break;
+               default:
+
+           }
+
+
+         } else if (tmp_list[i]['job_state'] == 'phone') {
+           switch(month) {
+               case '01':
+                   modal_graph[1]['data'][0]++;
+                   break;
+               case '02':
+                   modal_graph[1]['data'][1]++;
+                   break;
+               case '03':
+                   modal_graph[1]['data'][2]++;
+                   break;
+               case '04':
+                   modal_graph[1]['data'][3]++;
+                   break;
+               case '05':
+                   modal_graph[1]['data'][4]++;
+                   break;
+               case '06':
+                   modal_graph[1]['data'][5]++;
+                   break;
+               case '07':
+                   modal_graph[1]['data'][6]++;
+                   break;
+               case '08':
+                   modal_graph[1]['data'][7]++;
+                   break;
+               case '09':
+                   modal_graph[1]['data'][8]++;
+                   break;
+               case '10':
+                   modal_graph[1]['data'][9]++;
+                   break;
+               case '11':
+                   modal_graph[1]['data'][10]++;
+                   break;
+               case '12':
+                   modal_graph[1]['data'][11]++;
+                   break;
+               default:
+
+           }
+         } else if (tmp_list[i]['job_state'] == 'onsite') {
+           switch(month) {
+               case '01':
+                   modal_graph[2]['data'][0]++;
+                   break;
+               case '02':
+                   modal_graph[2]['data'][1]++;
+                   break;
+               case '03':
+                   modal_graph[2]['data'][2]++;
+                   break;
+               case '04':
+                   modal_graph[2]['data'][3]++;
+                   break;
+               case '05':
+                   modal_graph[2]['data'][4]++;
+                   break;
+               case '06':
+                   modal_graph[2]['data'][5]++;
+                   break;
+               case '07':
+                   modal_graph[2]['data'][6]++;
+                   break;
+               case '08':
+                   modal_graph[2]['data'][7]++;
+                   break;
+               case '09':
+                   modal_graph[2]['data'][8]++;
+                   break;
+               case '10':
+                   modal_graph[2]['data'][9]++;
+                   break;
+               case '11':
+                   modal_graph[2]['data'][10]++;
+                   break;
+               case '12':
+                   modal_graph[2]['data'][11]++;
+                   break;
+               default:
+
+           }
+         } else if (tmp_list[i]['job_state'] == 'offer') {
+           switch(month) {
+               case '01':
+                   modal_graph[3]['data'][0]++;
+                   break;
+               case '02':
+                   modal_graph[3]['data'][1]++;
+                   break;
+               case '03':
+                   modal_graph[3]['data'][2]++;
+                   break;
+               case '04':
+                   modal_graph[3]['data'][3]++;
+                   break;
+               case '05':
+                   modal_graph[3]['data'][4]++;
+                   break;
+               case '06':
+                   modal_graph[3]['data'][5]++;
+                   break;
+               case '07':
+                   modal_graph[3]['data'][6]++;
+                   break;
+               case '08':
+                   modal_graph[3]['data'][7]++;
+                   break;
+               case '09':
+                   modal_graph[3]['data'][8]++;
+                   break;
+               case '10':
+                   modal_graph[3]['data'][9]++;
+                   break;
+               case '11':
+                   modal_graph[3]['data'][10]++;
+                   break;
+               case '12':
+                   modal_graph[3]['data'][11]++;
+                   break;
+               default:
+
+           }
+         }
+
+     }
+
+        build();
+
+
+    });
+
+
+MAIN.on("get-modal",function(){
+    var tmp_list=MAIN.get("job_list");
+    MAIN.set('modal_list',tmp_list);
+
+})
+
+
 
   // Loads the initial information of mainpage for student.
   $.ajax("{{=URL('default', 'load_mainpage_s')}}",
@@ -175,6 +534,12 @@ $(function() {
             }
           }
   );
+
+MAIN.on('oo',function(e,column){
+     this.set( 'sortColumn', column );
+});
+
+
 
     MAIN.on("fill-star", function(e) {
     var areaid = $(e.node).data("starid");
@@ -197,6 +562,7 @@ $(function() {
        var tmp_list=MAIN.get('job_list');
        tmp_list[areaid]['edit'] = true;
        MAIN.set('job_list',tmp_list);
+
     });
 
     MAIN.on("savejob", function(e){
@@ -208,9 +574,14 @@ $(function() {
 
      MAIN.on("table-create", function() {
         var d = new Date();
-        var now = d.toString().substr(4,11);
+         var year = d.getUTCFullYear().toString();
+         var month_array=new Array('1','2','3','4','5','6','7','8','9','10','11','12');
+         var month = month_array[d.getUTCMonth()];
+        var now = d.toString().substr(7,8);
+         var date = now.substr(1,2);
+         var now_utc = year+'-'+month+'-'+date;
         var new_uiud = generateUUID();
-        send_table(new_uiud,false,'','','apply','','',now)
+        send_table(new_uiud,false,'','','apply','','',now_utc);
 
   });
 
@@ -231,6 +602,7 @@ $(function() {
       success: function (data) {
         tmp_list[areaid]['job_important']=job_important;
         MAIN.set('job_list',tmp_list);
+
       }
     })
      }
@@ -251,6 +623,7 @@ $(function() {
       success: function (data) {
         tmp_list.splice(areaid,1);
         MAIN.set('job_list',tmp_list);
+
       }
     })
      }
@@ -270,7 +643,7 @@ $(function() {
       url: "{{=URL('default', 'add_job')}}",
       method: "POST",
       data: {
-          uiud: uiud_id,
+          uiud_id: uiud_id,
           job_important:job_important,
           job_name:job_name,
           job_title:job_title,
@@ -282,6 +655,7 @@ $(function() {
       success: function (data) {
        tmp_list[areaid]['edit'] = false;
        MAIN.set('job_list',tmp_list);
+
       }
     })
 
@@ -294,7 +668,7 @@ $(function() {
       url: "{{=URL('default', 'add_job')}}",
       method: "POST",
       data: {
-          uiud: uiud_id,
+          uiud_id: uiud_id,
           job_important:job_important,
           job_name:job_name,
           job_title:job_title,
@@ -308,6 +682,7 @@ $(function() {
         var tmp_list = MAIN.get("job_list");
         tmp_list.splice(0,0,empty);
         MAIN.set('job_list',tmp_list);
+
       }
     })
 
@@ -330,12 +705,15 @@ $(function() {
 
 
 })
+
+
+
 </script>
 
 
-
-
-
+<script src="{{=URL('static','js/highcharts.js')}}"></script>
+ <script src="{{=URL('static','js/exporting.js')}}">
+<script src="{{=URL('static','js/web2py-bootstrap3.js')}}"></script>
 
 
 

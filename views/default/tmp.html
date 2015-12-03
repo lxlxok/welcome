@@ -1,0 +1,72 @@
+
+
+  {{extend 'layout.html'}}
+
+<div id="target">
+
+</div>
+
+<script id="template" type="text/ractive">
+
+<table class='superheroes'>
+  <tr>
+
+
+
+    <th>#</th>
+    <th class='sortable' on-tap='sort:name'>Superhero name</th>
+    <th class='sortable' on-tap='sort:realname'>Real name</th>
+    <th class='sortable' on-tap='sort:power'>Superpower</th>
+  </tr>
+
+  {%#each sort(superheroes, sortColumn) :num%}
+
+    <tr>
+      <td>{%num+1%}</td>
+      <td><a href='{%info%}'>{%name%}</a></td>
+      <td>{%realname%}</td>
+      <td>{%power%}</td>
+    </tr>
+  {%/each%}
+</table>
+
+        </script>
+
+        <script>
+
+
+
+
+
+
+var ractive = new Ractive({
+        el: '#target',
+        template: '#template',
+        delimiters: ['{%', '%}'],
+        tripleDelimiters: ['{%%', '%%}'],
+  data: {
+    superheroes: xmen,
+    sort: function ( array, sortColumn ) {
+      array = array.slice(); // clone, so we don't modify the underlying data
+
+      return array.sort( function ( a, b ) {
+        return a[ sortColumn ] < b[ sortColumn ] ? -1 : 1;
+      });
+
+    }
+  }
+});
+
+ractive.on( 'sort', function ( event, column ) {
+  this.set( 'sortColumn', column );
+});
+
+            xmen.push({
+  name: 'Storm',
+  realname: 'Monroe, Ororo',
+  power: 'Controlling the weather',
+  info: 'http://www.superherodb.com/Storm/10-135/'
+});
+
+
+        </script>
