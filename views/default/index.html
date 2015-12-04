@@ -15,9 +15,20 @@ body {
         <li><a href="{{=URL('default', 'user', args=['login'])}}"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
       </ul>
 
-
         </div>
+              <ul class="nav navbar-nav navbar-right">
+         <li><a href="{{=URL('default','contact')}}"><span class="glyphicon glyphicon-envelope"></span>Contact</a></li>
+</ul>
       </div>
 </nav>
 
 <script src="{{=URL('static','js/web2py-bootstrap3.js')}}"></script
+
+    <footer class="footer">
+      <div class="container-fluid">
+        <div class="copyright pull-left"></div>
+          <div id="poweredBy" class="pull-right">
+            contact gitluckok@gmail.com
+          </div>
+      </div>
+    </footer>

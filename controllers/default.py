@@ -122,7 +122,7 @@ def load_mainpage_s():
     calculate how many post unreaded
     """
     job_rows = db((db.job.id>0) & (db.job.user_id==auth.user_id)).select(orderby=~db.job.id)
-    job_list = [{'uiud_id':r.uiud_id,'job_important':r.job_important,'job_name':r.job_name,'job_title':r.job_title,'job_state':r.job_state,'job_contact':r.job_contact,'job_email':r.job_email,'data_time':r.data_time,'edit':False} for r in job_rows]
+    job_list = [{'uiud_id':r.uiud_id,'job_important':r.job_important,'job_name':r.job_name,'job_title':r.job_title,'job_state':r.job_state,'job_website':r.job_website,'job_contact':r.job_contact,'job_email':r.job_email,'data_time':r.data_time,'edit':False} for r in job_rows]
     unread_mess_num = db((db.post_search.post_to_id == log_id) & (db.post_search.read_state == False)).count()
     return response.json(dict(remain_day=remain_day,unread_mess_num=unread_mess_num,job_list=job_list))
 
@@ -137,6 +137,7 @@ def add_job():
             job_name=request.vars.job_name,
             job_title=request.vars.job_title,
             job_state=request.vars.job_state,
+            job_website=request.vars.job_website,
             job_contact=request.vars.job_contact,
             job_email=request.vars.job_email,
             data_time=now)
@@ -231,8 +232,8 @@ def add_follow():
             db((db.folllow_relation.teacher_id == r_teacher_id) & (db.folllow_relation.followed_by_id == r_student_id)).delete()
     return "ok"
 
-def email():
-    return "Hi! feel free to contact me at xli111@ucsc.edu"
+def contact():
+    return "Hi! This is a toolbox for helping student to manage their job application and receive job recommendation from teachers, Feel free to contact me at gitluckok@gmail.com"
 
 
 @auth.requires_login()

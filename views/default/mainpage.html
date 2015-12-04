@@ -59,7 +59,7 @@
 
 <div class="container-fluibackground">
   <div class="jumbotron text-center" style="background-color:#d9edf7">
-    <div><h1>   {%remain_day%} days left for job seeking</h1></div>
+    <div><h1> <span style="color:red">  {%remain_day%} </span>days left for job seeking</h1></div>
 
 
 
@@ -90,6 +90,7 @@
             <th on-click="oo:job_name"><i class="fa fa-caret-down"></i>Company</th>
             <th on-click="oo:job_title"><i class="fa fa-caret-down"></i>Position</th>
             <th on-click="oo:job_state"><i class="fa fa-caret-down"></i>State</th>
+            <th>Website</th>
             <th on-click="oo:job_contact"><i class="fa fa-caret-down"></i>Contactor</th>
             <th on-click="oo:job_email"><i class="fa fa-caret-down"></i>Email</th>
             <th on-click="oo:data_time"><i class="fa fa-caret-down"></i>Update</th>
@@ -107,6 +108,7 @@
         <td>{%job_name%}</td>
         <td>{%job_title%}</td>
         <td>{%job_state%}</td>
+        <td><a href="{% job_website %}" target="view_window"><i class="fa fa-internet-explorer"></i></a></td>
         <td>{%job_contact%}</td>
         <td>{%job_email%}</td>
         <td>{%data_time%}</td>
@@ -167,6 +169,7 @@
             <th>Company</th>
             <th>Position</th>
             <th>State</th>
+            <th>Website</th>
             <th>Contactor</th>
             <th>Email</th>
             <th>Update</th>
@@ -209,6 +212,13 @@
     </select>
     {% else %}
     {%job_state%}
+    {% /if %}
+    </td>
+    <td>
+    {% #if edit %}
+    <input type="text" value="{% job_website %}">
+    {% else %}
+    <a href="{% job_website %}" target="view_window"><i class="fa fa-internet-explorer"></i></a>
     {% /if %}
     </td>
     <td>
@@ -581,7 +591,7 @@ MAIN.on('oo',function(e,column){
          var date = now.substr(1,2);
          var now_utc = year+'-'+month+'-'+date;
         var new_uiud = generateUUID();
-        send_table(new_uiud,false,'','','apply','','',now_utc);
+        send_table(new_uiud,false,'','','apply','','','',now_utc);
 
   });
 
@@ -635,6 +645,7 @@ MAIN.on('oo',function(e,column){
              var job_name = tmp_list[areaid]['job_name'];
              var job_title = tmp_list[areaid]['job_title'];
              var job_state = tmp_list[areaid]['job_state'];
+             var job_website = tmp_list[areaid]['job_website'];
              var job_contact = tmp_list[areaid]['job_contact'];
              var job_email = tmp_list[areaid]['job_email'];
              var data_time = tmp_list[areaid]['data_time'];
@@ -648,6 +659,7 @@ MAIN.on('oo',function(e,column){
           job_name:job_name,
           job_title:job_title,
           job_state:job_state,
+          job_website:job_website,
           job_contact:job_contact,
           job_email:job_email,
           data_time:data_time
@@ -663,7 +675,7 @@ MAIN.on('oo',function(e,column){
 
 
 
-     function send_table(uiud_id,job_important,job_name,job_title,job_state,job_contact,job_email,data_time) {
+     function send_table(uiud_id,job_important,job_name,job_title,job_state,job_website,job_contact,job_email,data_time) {
          $.ajax({
       url: "{{=URL('default', 'add_job')}}",
       method: "POST",
@@ -673,12 +685,13 @@ MAIN.on('oo',function(e,column){
           job_name:job_name,
           job_title:job_title,
           job_state:job_state,
+          job_website:job_website,
           job_contact:job_contact,
           job_email:job_email,
           data_time:data_time
       },
       success: function (data) {
-        var empty={uiud_id:uiud_id,job_important:job_important,job_name:job_name,job_title:job_title,job_state:job_state,job_contact:job_contact,job_email:job_email,data_time:data_time,edit:true}
+        var empty={uiud_id:uiud_id,job_important:job_important,job_name:job_name,job_title:job_title,job_state:job_state,job_website:job_website,job_contact:job_contact,job_email:job_email,data_time:data_time,edit:true}
         var tmp_list = MAIN.get("job_list");
         tmp_list.splice(0,0,empty);
         MAIN.set('job_list',tmp_list);
