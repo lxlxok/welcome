@@ -16,15 +16,6 @@
                 form.add_button(T('Lost Password'),URL(args='request_reset_password'),_class='btn btn-default')
             pass
         pass
-
-        if request.args(0)=='profile':
-        rr = db(db.auth_user.id == auth.user_id).select().first()
-        db.auth_user.id.readable =db.auth_user.id.writable = False
-        db.auth_user.statue.writable = False
-        db.auth_user.email.writable = False
-        form=SQLFORM(db.auth_user,record=rr)
-        pass
-
         =form
         }}
         </div>

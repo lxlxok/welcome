@@ -18,6 +18,12 @@
 
 from datetime import datetime
 
+auth.settings.profile_next=URL('default', 'index')
+auth.messages.logged_in=None
+auth.messages.logged_out=None
+auth.messages.profile_updated=None
+
+
 db.define_table('post_content',
                 Field('user_id','reference auth_user'),
                 Field('uiud_id'),
@@ -40,6 +46,7 @@ db.define_table('post_search',
                 )
 
 db.define_table('job',
+                Field('user_id','reference auth_user'),
                 Field('uiud_id'),
                 Field('job_name',default=''),
                 Field('job_title',default=''),
@@ -50,17 +57,6 @@ db.define_table('job',
                 Field('data_time','date',default=datetime.utcnow().date())
                 )
 
-db.define_table('job_old',
-                Field('job_name',requires=IS_NOT_EMPTY(error_message='please enter the name for company')),
-                Field('job_title',default='SDE'),
-                Field('job_state',default='apply',requires=IS_IN_SET(['apply','telephone','onsite','offer','refused'])),
-                Field('job_way',default='recommend',requires=IS_IN_SET(['recommend','jobfair','internet'])),
-                Field('job_contact',default=''),
-                Field('job_email',default=''),
-                Field('job_important','boolean',default=False),
-                Field('job_address',default=''),
-                Field('job_tips','text',default=''),
-                Field('data_time','date',default=datetime.utcnow().date(),readable=False, writable=False)
-                )
+
 
 

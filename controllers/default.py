@@ -17,6 +17,7 @@ def index():
     """
     show the view for login
     """
+
     log_id = auth.user_id
     if auth.user_id is not None:
         r = db(db.auth_user.id == log_id).select().first()
@@ -120,7 +121,7 @@ def load_mainpage_s():
     """
     calculate how many post unreaded
     """
-    job_rows = db(db.job.id>0).select(orderby=~db.job.id)
+    job_rows = db((db.job.id>0) & (db.job.user_id==auth.user_id)).select(orderby=~db.job.id)
     job_list = [{'uiud_id':r.uiud_id,'job_important':r.job_important,'job_name':r.job_name,'job_title':r.job_title,'job_state':r.job_state,'job_contact':r.job_contact,'job_email':r.job_email,'data_time':r.data_time,'edit':False} for r in job_rows]
     unread_mess_num = db((db.post_search.post_to_id == log_id) & (db.post_search.read_state == False)).count()
     return response.json(dict(remain_day=remain_day,unread_mess_num=unread_mess_num,job_list=job_list))
@@ -130,6 +131,7 @@ def load_mainpage_s():
 def add_job():
     now = datetime.utcnow().date()
     db.job.update_or_insert((db.job.uiud_id == request.vars.uiud_id),
+            user_id=auth.user_id,
             uiud_id=request.vars.uiud_id,
             job_important=request.vars.job_important,
             job_name=request.vars.job_name,
@@ -253,6 +255,9 @@ def user():
         @auth.requires_permission('read','table name',record_id)
     to decorate functions that need access control
     """
+    db.auth_user.email.writable=(request.args(0)!='profile')
+    db.auth_user.statue.writable=(request.args(0)!='profile')
+
     return dict(form=auth())
 
 
