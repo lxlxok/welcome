@@ -48,6 +48,7 @@
 <script src="{{=URL('static', 'components/dist/bootstrap3-wysihtml5.min.js')}}"></script>
 
 
+
 <script>
 
     $(document).ready(function() {
@@ -58,6 +59,7 @@
   $('.textarea').wysihtml5({
     toolbar: {
       fa: true
+
     }
   });
 
@@ -132,6 +134,10 @@
               var tmp_post={title:pos_title,content:pos_content,uiud:darft_id,time:now_utc,delete:false};
               tmp_list.splice(0,0,tmp_post);
               MAIN.set('post_list',tmp_list);
+              $("#pos_title").val("");
+               $('#pos_content').data("wysihtml5").editor.clear();
+
+
               },
               error: function() {
               alert("Submit Error!");

@@ -343,6 +343,20 @@ function build() {
 MAIN.on("get-graph",function(){
      var tmp_list=MAIN.get("job_list");
 
+    modal_graph=[{
+            name: 'Apply',
+            data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        }, {
+            name: 'Phone Interview',
+           data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        }, {
+            name: 'Onsite Interview',
+            data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        }, {
+            name: 'Offer',
+            data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        }]
+
      for(var i = 0; i < tmp_list.length; i++) {
            var m=tmp_list[i]['data_time'].substr(5,6);
            var month =  m.substr(0,2);

@@ -233,7 +233,7 @@ def add_follow():
     return "ok"
 
 def contact():
-    return "Hi! This is a toolbox for helping student to manage their job application and receive job recommendation from teachers, Feel free to contact me at gitluckok@gmail.com"
+    return "Hi! Thank you for visiting www.gitluck.com This is a toolbox for helping student to manage their job application and receive job recommendation from teachers, Feel free to contact me at gitluckok@gmail.com"
 
 
 @auth.requires_login()
