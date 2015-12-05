@@ -58,7 +58,8 @@
 
   $('.textarea').wysihtml5({
     toolbar: {
-      fa: true
+      "fa": true,
+       "image": false,
 
     }
   });
@@ -73,8 +74,9 @@
         tripleDelimiters: ['{%%', '%%}'],
         data: {
             post_list: [],
-            t_name:''
-
+            t_name:'',
+            editing:false,
+            edit_uiud:''
         },
     });
 
@@ -97,13 +99,31 @@
   });
 
 
+
+    MAIN.on("edit-post", function(e) {
+    MAIN.set('editing',true);
+    var areaid = $(e.node).data("arrayid");
+    var tmppost=MAIN.get('post_list');
+    var tmpuiud =tmppost[areaid]['uiud'];
+    MAIN.set('edit_uiud',tmpuiud);
+    $("#pos_title").val(tmppost[areaid]['title']);
+    $('#pos_content').data("wysihtml5").editor.clear();
+    $('#pos_content').data("wysihtml5").editor.setValue(tmppost[areaid]['content']);
+
+  });
+
+
      $("#submit-btn").click(function() {
          var pos_title = $("#pos_title").val();
          var pos_content = $('#pos_content').val();
+         var tmp_editing=MAIN.get("editing");
+         var tmp_edit_uiud=MAIN.get("edit_uiud");
          var darft_id = generateUUID();
+         if (tmp_editing == true){
+             darft_id = tmp_edit_uiud;
+         }
          var teacher_name = MAIN.get("t_name");
          send_post(darft_id, pos_title,pos_content,teacher_name);
-
 
      })
 
@@ -132,6 +152,17 @@
               var date = now.substr(1,2);
               var now_utc = year+'-'+month+'-'+date+' '+hour+':'+minute+':'+second;
               var tmp_post={title:pos_title,content:pos_content,uiud:darft_id,time:now_utc,delete:false};
+              var tmp_editing=MAIN.get("editing");
+              if (tmp_editing == true) {
+
+                  for (var i=0; i< tmp_list.length; i++) {
+                      if (tmp_list[i]['uiud'] == darft_id) {
+                          tmp_list.splice(i,1);
+                      }
+                  }
+                  MAIN.set('editing',false);
+              }
+
               tmp_list.splice(0,0,tmp_post);
               MAIN.set('post_list',tmp_list);
               $("#pos_title").val("");
@@ -145,6 +176,16 @@
             }
     );
   }
+
+
+       function edit_post(darft_id,num_id) {
+
+
+
+
+
+
+       }
 
 
       function delete_post(darft_id,num_id) {
@@ -207,7 +248,7 @@
   <div class="panel panel-success">
     <div class="panel-heading">
     <h4 class="panel-title">
-   <a data-toggle="collapse" data-parent="#accordion" href="#collapse{%num%}"> <span> {% title %} </span><span style="float:right"><button data-arrayid={%num%} on-click="delete-post"><span class="glyphicon glyphicon-trash"></span></button></span></a>
+   <a data-toggle="collapse" data-parent="#accordion" href="#collapse{%num%}"> <span> {% title %} </span> </a>    <span style="float:right"><button data-arrayid={%num%} on-click="edit-post"><span class="glyphicon glyphicon-pencil"></span></button><button data-arrayid={%num%} on-click="delete-post"><span class="glyphicon glyphicon-trash"></span></button></span>
     </h4>
     </div>
     <div id="collapse{%num%}" class="panel-collapse collapse">

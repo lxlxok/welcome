@@ -48,6 +48,7 @@ def add_post():
     """
     add the content to the post_content table
     """
+
     now = datetime.utcnow()
     db.post_content.update_or_insert((db.post_content.uiud_id == request.vars.uiud_id),
             user_id = auth.user_id,
@@ -141,7 +142,7 @@ def add_job():
             job_contact=request.vars.job_contact,
             job_email=request.vars.job_email,
             data_time=now)
-    print(request.vars.uiud_id)
+
     return "ok"
 
 def update_star():
@@ -214,7 +215,7 @@ def search_user():
         row=db((db.folllow_relation.teacher_id == teacher_id) & (db.folllow_relation.followed_by_id == auth.user_id)).select().first()
         if row is not None:
             is_followed = 1
-        print(row)
+
         return dict(exit=1,is_teacher=is_teacher,is_followed=is_followed,student_id=auth.user_id,teacher_id=teacher_id,email_add=email_add,statue=statue,first_name=first_name,last_name=last_name,email=email,course=course,office=office,introduction=introduction)
     return dict(exit=0,is_teacher=0,is_followed=is_followed,student_id=auth.user_id,teacher_id=teacher_id,email_add=email_add)
 
