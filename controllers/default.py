@@ -44,6 +44,7 @@ def mainpage_teacher():
 """
 ajax operation
 """
+@auth.requires_signature()
 def add_post():
     """
     add the content to the post_content table
@@ -66,11 +67,12 @@ def add_post():
         db.post_search.insert(post_content_id=new_post.id,post_to_id=r.followed_by_id,read_state=False,auth_name=request.vars.t_name,pos_title=new_post.pos_title,pos_time=new_post.pos_time)
     return "ok"
 
-
+@auth.requires_signature()
 def delete_post():
     db(db.post_content.uiud_id==request.vars.uiud_id).delete()
     return "ok"
 
+@auth.requires_signature()
 def load_post():
     rows = db(db.post_content.user_id==auth.user_id).select(orderby=~db.post_content.id)
     r = db(db.auth_user.id == auth.user_id).select().first()
@@ -105,7 +107,7 @@ define all the mainpage related with student
 def mainpage():
     return dict()
 
-
+@auth.requires_signature()
 def load_mainpage_s():
     log_id = auth.user_id
     r = db(db.auth_user.id == log_id).select().first()
@@ -128,7 +130,7 @@ def load_mainpage_s():
     return response.json(dict(remain_day=remain_day,unread_mess_num=unread_mess_num,job_list=job_list))
 
 
-
+@auth.requires_signature()
 def add_job():
     now = datetime.utcnow().date()
     db.job.update_or_insert((db.job.uiud_id == request.vars.uiud_id),
@@ -145,10 +147,12 @@ def add_job():
 
     return "ok"
 
+@auth.requires_signature()
 def update_star():
     db(db.job.uiud_id == request.vars.uiud_id).update(job_important=request.vars.job_important)
     return "ok"
 
+@auth.requires_signature()
 def delete_job():
     db(db.job.uiud_id == request.vars.uiud_id).delete()
     return "ok"
@@ -159,6 +163,7 @@ define message page for student
 def message():
     return dict()
 
+@auth.requires_signature()
 def load_message_s():
     rows = db(db.folllow_relation.followed_by_id==auth.user_id).select()
     follow_list=[]
@@ -178,10 +183,12 @@ def load_message_s():
             message_list.append({'pos_id':pos_r.id,'read_state':pos_r.read_state,'auth_name':pos_r.auth_name,'pos_title':pos_r.pos_title,'pos_time':pos_r.pos_time,'pos_content':content.pos_content,'panel':''})
     return response.json(dict(follow_list=follow_list,message_list=message_list))
 
+@auth.requires_signature()
 def delete_message():
     db(db.post_search.id==request.vars.post_id).delete()
     return "ok"
 
+@auth.requires_signature()
 def read_message():
     db(db.post_search.id==request.vars.post_id).update(read_state=True)
     return "ok"
@@ -219,7 +226,7 @@ def search_user():
         return dict(exit=1,is_teacher=is_teacher,is_followed=is_followed,student_id=auth.user_id,teacher_id=teacher_id,email_add=email_add,statue=statue,first_name=first_name,last_name=last_name,email=email,course=course,office=office,introduction=introduction)
     return dict(exit=0,is_teacher=0,is_followed=is_followed,student_id=auth.user_id,teacher_id=teacher_id,email_add=email_add)
 
-
+@auth.requires_signature()
 def add_follow():
     r_student_id = request.vars.student_id
     r_teacher_id = request.vars.teacher_id
@@ -237,9 +244,6 @@ def contact():
     return "Hi! Thank you for visiting www.gitluck.com This is a toolbox for helping student to manage their job application and receive job recommendation from teachers, Feel free to contact me at gitluckok@gmail.com"
 
 
-@auth.requires_login()
-def dashboard():
-    return dict(message=T('Dashboard'))
 
 def user():
     """

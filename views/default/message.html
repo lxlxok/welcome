@@ -109,7 +109,7 @@ $(function() {
     });
 
   // Loads the initial information of mainpage for student.
-  $.ajax("{{=URL('default', 'load_message_s')}}",
+  $.ajax("{{=URL('default', 'load_message_s',user_signature=True)}}",
           {
 
             method: 'POST',

@@ -81,7 +81,7 @@
     });
 
   // Loads the initial information of mainpage for student.
-  $.ajax("{{=URL('default', 'load_post')}}",
+  $.ajax("{{=URL('default', 'load_post',user_signature=True)}}",
           {
             method: 'POST',
             success: function (data) {
@@ -128,7 +128,7 @@
      })
 
        function send_post(darft_id, pos_title, pos_content,teacher_name) {
-    $.ajax("{{=URL('default', 'add_post')}}",
+    $.ajax("{{=URL('default', 'add_post',user_signature=True)}}",
             {
 
               data: {

@@ -141,7 +141,7 @@
       <div class="modal-body">
 
 
-      <div id="container" style="min-width: 850px; height: 400px; margin: 0 auto"></div>
+      <div id="container" style="width: auto; height: auto; margin: 0 auto"></div>
 
 
       </div>
@@ -278,6 +278,10 @@ $(function() {
 
 function build() {
     $('#container').highcharts({
+        chart:{
+            reflow: true,
+            width: 800
+        },
         title: {
             text: 'Monthly Average Job Statistic',
             x: -20 //center
@@ -537,16 +541,67 @@ MAIN.on("get-graph",function(){
     });
 
 
+
+function toSave(value, type, name) {
+    var blob;
+    if (typeof window.Blob == "function") {
+        blob = new Blob([value], {type: type});
+    } else {
+        var BlobBuilder = window.BlobBuilder || window.MozBlobBuilder || window.WebKitBlobBuilder || window.MSBlobBuilder;
+        var bb = new BlobBuilder();
+        bb.append(value);
+        blob = bb.getBlob(type);
+    }
+    var URL = window.URL || window.webkitURL;
+    var bloburl = URL.createObjectURL(blob);
+    var anchor = document.createElement("a");
+    if ('download' in anchor) {
+        anchor.style.visibility = "hidden";
+        anchor.href = bloburl;
+        anchor.download = name;
+        document.body.appendChild(anchor);
+        var evt = document.createEvent("MouseEvents");
+        evt.initEvent("click", true, true);
+        anchor.dispatchEvent(evt);
+        document.body.removeChild(anchor);
+    } else if (navigator.msSaveBlob) {
+        navigator.msSaveBlob(blob, name);
+    } else {
+        location.href = bloburl;
+    }
+}
+
+
+function saveToString(obj_list) {
+        var rs='';
+        for (var i = 0; i < obj_list.length; i++) {
+            rs = rs + obj_list[i]['job_name'];
+            rs = rs + '\t' + obj_list[i]['job_title'];
+            rs = rs + '\t' + obj_list[i]['job_state'];
+            rs = rs + '\t' + obj_list[i]['job_website'];
+            rs = rs + '\t' + obj_list[i]['job_contact'];
+            rs = rs + '\t' + obj_list[i]['job_email'];
+            rs = rs + '\t' + obj_list[i]['data_time'];
+            rs = rs + '\r\n';
+        }
+    return rs;
+    }
+
+
+
+
 MAIN.on("get-modal",function(){
     var tmp_list=MAIN.get("job_list");
     MAIN.set('modal_list',tmp_list);
+    var rs=saveToString(tmp_list);
+   toSave(rs, "text/latex", "jobList.txt");
 
 })
 
 
 
   // Loads the initial information of mainpage for student.
-  $.ajax("{{=URL('default', 'load_mainpage_s')}}",
+  $.ajax("{{=URL('default', 'load_mainpage_s',user_signature=True)}}",
           {
 
             method: 'POST',
@@ -616,7 +671,7 @@ MAIN.on('oo',function(e,column){
        uiud_id=tmp_list[areaid]['uiud_id']
 
          $.ajax({
-      url: "{{=URL('default', 'update_star')}}",
+      url: "{{=URL('default', 'update_star',user_signature=True)}}",
       method: "POST",
       data: {
           uiud_id: uiud_id,
@@ -638,7 +693,7 @@ MAIN.on('oo',function(e,column){
        uiud_id=tmp_list[areaid]['uiud_id']
 
          $.ajax({
-      url: "{{=URL('default', 'delete_job')}}",
+      url: "{{=URL('default', 'delete_job',user_signature=True)}}",
       method: "POST",
       data: {
           uiud_id: uiud_id,
@@ -665,7 +720,7 @@ MAIN.on('oo',function(e,column){
              var data_time = tmp_list[areaid]['data_time'];
 
          $.ajax({
-      url: "{{=URL('default', 'add_job')}}",
+      url: "{{=URL('default', 'add_job',user_signature=True)}}",
       method: "POST",
       data: {
           uiud_id: uiud_id,
@@ -691,7 +746,7 @@ MAIN.on('oo',function(e,column){
 
      function send_table(uiud_id,job_important,job_name,job_title,job_state,job_website,job_contact,job_email,data_time) {
          $.ajax({
-      url: "{{=URL('default', 'add_job')}}",
+      url: "{{=URL('default', 'add_job',user_signature=True)}}",
       method: "POST",
       data: {
           uiud_id: uiud_id,
