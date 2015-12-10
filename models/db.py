@@ -21,7 +21,10 @@ if not request.env.web2py_runtime_gae:
     #MySQL	mysql://username:password@localhost/test
     ##this is using sqlite ##db = DAL('mysql://<mysql_user>:<mysql_password>@localhost/<mysql_database>')
 
-    #db=DAL('mysql://root:mysql@127.0.0.1:3306/mytest', pool_size=512,check_reserved=['all'])
+
+  ##the edition deployed on aws is used mysql with the code below
+    #db=DAL('mysql://*****:*******@mysql.cjo7****nup0.us-west-2.rds.amazonaws.com:3306/gitluckDatabase', pool_size=512,check_reserved=['all'])
+
     db = DAL(myconf.take('db.uri'), pool_size=myconf.take('db.pool_size', cast=int), check_reserved=['all'])
 else:
     ## connect to Google BigTable (optional 'google:datastore://namespace')

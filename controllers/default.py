@@ -240,9 +240,6 @@ def add_follow():
             db((db.folllow_relation.teacher_id == r_teacher_id) & (db.folllow_relation.followed_by_id == r_student_id)).delete()
     return "ok"
 
-def contact():
-    return "Hi! Thank you for visiting www.gitluck.com This is a toolbox for helping student to manage their job application and receive job recommendation from teachers, Feel free to contact me at gitluckok@gmail.com"
-
 
 
 def user():
